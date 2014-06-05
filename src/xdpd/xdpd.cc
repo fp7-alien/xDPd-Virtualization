@@ -10,6 +10,7 @@
 #include "management/plugin_manager.h"
 
 //Virtual agent
+//Daniel Depaoli <daniel.depaoli (at) create-net.org>
 //#include "virtual-agent/slice.h"
 //#include "virtual-agent/structures.h"
 #include "virtual-agent/virtualagent.h"

@@ -93,6 +93,8 @@ afa_result_t cmm_process_of1x_packet_in(const of1x_switch_t* sw,
 /**
  * Virtualization agent select the controller based on
  * his database and on of1x_packet_matches_t matches
+ *
+ * Daniel Depaoli <daniel.depaoli (at) create-net.org>
  */
 	if (virtual_agent::is_active())
 	{
