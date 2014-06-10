@@ -25,7 +25,6 @@ Makefile
 .deps
 .libs
 autom4te.cache
-config.*
 configure
 install-sh
 ltmain.sh

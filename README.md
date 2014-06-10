@@ -6,17 +6,16 @@ This is a reference for xdpd_virtualization. Before this you must read the *READ
 
 IMPORTANT NOTES
 ===============
-This revision is based on rofl-library master-0.3 (revision 'b61c35e0' of 02/05/2014)
+This revision is based on rofl-core and xdpd master-0.3
 ````
 git clone https://github.com/bisdn/rofl-core.git
 cd rofl-core
-git checkout b61c35e0
+git checkout master-0.3
 ````
-I'm working  to adapt the code to the current master.
 
 Building
 ========
-Build and install rofl-core (revision 'b61c35e0')
+Build and install rofl-core
 
 For xDPd-Virtualization just follow xdpd guide.
 
