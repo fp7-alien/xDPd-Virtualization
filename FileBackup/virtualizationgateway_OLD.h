@@ -10,7 +10,7 @@
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /*
- * virtualgateway.h
+ * virtualization_gateway.h
  *
  *  @author Daniel Depaoli <daniel.depaoli (at) create-net.org>
  */
@@ -30,7 +30,7 @@
 
 namespace rofl {
 
-class virtualgateway2:
+class virtualization_gateway:
 		public csocket_owner,
 		public ciosrv
 {
@@ -44,7 +44,7 @@ public:
 		/**
 		 *
 		 */
-		virtualgateway2(caddress addr = caddress(AF_INET, "127.0.0.1", 6600));
+		virtualization_gateway(caddress addr = caddress(AF_INET, "127.0.0.1", 6600));
 
 		/**
 		 *

@@ -1,0 +1,104 @@
+[
+    {
+        "method": "addSlice",
+        "params": {
+            "name": "slice-name",
+            "ip": "slice-ip",
+            "port": 6633,
+            "datapaths":{
+		      "dp1": ["port1", "port2"],
+		      "dp2": ["port3", "port4"]
+			}
+        },
+        "id": 1,
+        "returns": 1 
+    },
+    
+    {
+        "method": "deleteSlice",
+        "params": {
+            "name": "slice-name"
+        },
+        "id": 2,
+        "returns": 1 
+    },
+    
+    {
+        "method": "listSlice",
+        "params": {},
+        "id": 3,
+        "returns": ["slice1", "slice2"] 
+    },
+    
+    {
+        "method": "listSliceInfo",
+        "params": {
+            "name": "slice-name"
+        },
+        "id": 4,
+        "returns": {            
+            "name": "slice-name",
+            "ip": "slice-ip",
+            "port": 6633,
+            "datapaths":{
+		      "dp1": ["port1", "port2"],
+		      "dp2": ["port3", "port4"]
+			}
+	   }
+    },
+    
+    {
+        "method": "addFlowspace",
+        "params": {
+            "priority": 100,
+            "name": "flowspace-name",
+            "slice": "slice-name",
+            "listDatapaths": ["dp1", "dp2"],
+            "matches":{
+                "vlan_vid": 0
+            }
+        },
+        "id": 5,
+        "returns": 1 
+    },
+    
+    {
+        "method": "removeFlowspace",
+        "params": {
+            "name": "flowspace-name"
+        },
+        "id": 6,
+        "returns": 1 
+    },
+    
+    {
+        "method": "listFlowspaces",
+        "params": {},
+        "id": 7,
+        "returns": ["fs1", "fs2"]
+    },
+
+    {
+        "method": "listFlowspaceInfo",
+        "params": {
+            "name": "flowspace-name"
+            },
+        "id": 8,
+        "returns": {
+            "priority": 100,
+            "name": "flowspace-name",
+            "slice": "slice-name",
+            "listDatapaths": ["dp1", "dp2"],
+            "matches":{
+                "vlan_vid": 0
+            }
+        }
+    },
+    
+    {
+        "method": "listDatapaths",
+        "params": {},
+        "id": 9,
+        "returns": ["dp1", "dp2"] 
+    }
+]

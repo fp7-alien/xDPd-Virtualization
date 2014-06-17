@@ -14,6 +14,7 @@
 //#include "virtual-agent/slice.h"
 //#include "virtual-agent/structures.h"
 #include "virtual-agent/virtualagent.h"
+#include "virtual-agent/virtualizationgateway.h"
 
 using namespace rofl;
 using namespace xdpd;
@@ -119,7 +120,6 @@ int main(int argc, char** argv){
 		ROFL_INFO("Init driver failed\n");	
 		exit(-1);
 	}
-
 	//Init the ciosrv.
 	ciosrv::init();
 
@@ -127,6 +127,11 @@ int main(int argc, char** argv){
 	optind=0;
 	plugin_manager::init(argc, argv);
 
+	if (virtual_agent::is_active())
+	{
+		virtualization_gateway*  vg= new virtualization_gateway(6600);
+		vg->nothing();
+	}
 	//ciosrv run. Only will stop in Ctrl+C
 	ciosrv::run();
 

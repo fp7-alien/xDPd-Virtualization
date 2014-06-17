@@ -81,6 +81,15 @@ public:
 		return controller;
 	}
 
+	void info_ctl()
+	{
+//		for (std::set<cofctl*>::iterator it = ofctl_set.begin(); it != ofctl_set.end(); ++it)
+//		{
+//			cofctl* ctl = *it;
+//			printf("Controller %s\n", ctl->c_str());
+//		}
+	}
+
 
 
 protected:

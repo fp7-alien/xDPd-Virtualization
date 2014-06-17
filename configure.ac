@@ -70,7 +70,6 @@ AC_CONFIG_FILES([
 	src/xdpd/virtual-agent/Makefile
 	test/Makefile
 	test/grouptest/Makefile
-
 ])
 
 # Doxygen (here to be the last Makefile) 

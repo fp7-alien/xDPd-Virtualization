@@ -1,0 +1,7 @@
+jsonrpcstub -s -c -o . specification.json stub
+
+It generates:
+	* Client Stub stubclient.h
+	* Server Stub abstractstubserver.h
+
+

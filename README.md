@@ -1,24 +1,47 @@
 xDPd-Virtualization
 ===================
-Module that adds virtualization capabilities to xDPd.
+xDPd-Virtualization is a modified version of xDPd (Extended datapath daemon) with a virtualization module (Virtualization Agent).
+Like other virtualization approaches (FlowVisor and VeRTIGO), the VA’s main objective is to allow 
+multiple parallel experiments to be executed on the same physical substrate without interfering each other. The VA has 
+been designed with the following goals: 
+* avoid Single Point of Failures (SPoF) through a distributed slicing architecture, 
+* provide an OpenFlow version agnostic slicing mechanism and 
+* minimize the latency overhead caused by the slicing operations. 
 
-This is a reference for xdpd_virtualization. Before this you must read the *README* of rofl-core and xdpd.
+Main characteristics of this virtualization technique are:
+* __Distributed slicing__: virtualization operations are performed directly on the nodes
+* __Protocol agnostic__: it does not inspect the control protocol
+* __Latency overhead__: neither inspects the OpenFlow protocol nor needs to establish additional TLS connections
 
 IMPORTANT NOTES
 ===============
-This revision is based on rofl-library master-0.3 (revision 'b61c35e0' of 02/05/2014)
-````
-git clone https://github.com/bisdn/rofl-core.git
-cd rofl-core
-git checkout b61c35e0
-````
-I'm working  to adapt the code to the current master.
+This software is based on rofl-core (<https://github.com/bisdn/rofl-core>) and xdpd (<https://github.com/bisdn/xdpd>).
+
+The version of both is 
 
 Building
 ========
-Build and install rofl-core (revision 'b61c35e0')
+````
+git clone https://github.com/bisdn/rofl-core.git
+cd rofl-core
+git checkout master-0.3
+sh autogen.sh
+cd build
+../configure
+make
+sudo make install
+````
 
-For xDPd-Virtualization just follow xdpd guide.
+````
+git clone https://github.com/fp7-alien/xDPd-Virtualization.git
+cd xDPd-Virtualization
+sh autogen.sh
+cd build
+../configure
+make
+````
+
+For details on installation and dependencies please refer to xdpd/rofl-core project.
 
 Using
 =====
@@ -35,6 +58,15 @@ sudo ./xdpd -n -c configFileVirtualization.cfg
 
 Config File
 ===========
+The section _config_ is the same and unchanged respect to xdpd. The only differences is that in this section if virtualization agent is active all
+controllers settings will be ignored.
+
+In the section _virtual-agent_ there are the general parameters for Virtualization Agent, as the virtual agent ip and port.
+
+_Slice_ section includes all slices with theri name, ip:port and a list of datapath where the slice will be installed. Each datapath is an array of ports. If no ports are specified, the Virtual Agent includes all ports of that switch.
+
+_Flowspace_ section contains the list of flowspace rules (_at the moment only vlan\_vid is valid_). The number of priority means: bigger the number, less rule importance.
+
 Two examples are avaible in folder *ConfigFile*.
 In the examples there are 2 tap port used to connect virtual-machine with xdpd
 

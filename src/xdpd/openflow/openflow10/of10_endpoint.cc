@@ -869,6 +869,7 @@ of10_endpoint::process_packet_in(
 
 		if (virtual_agent::is_active())
 		{
+			printf("send msg to %s\n", virtual_agent::list_switch_by_id[sw->dpid]->select_slice(controller)->name.c_str());
 			send_packet_in_message(
 					controller,
 					buffer_id,
