@@ -15,16 +15,21 @@ Main characteristics of this virtualization technique are:
 
 IMPORTANT NOTES
 ===============
+<<<<<<< HEAD
 This software is based on rofl-core (<https://github.com/bisdn/rofl-core>) and xdpd (<https://github.com/bisdn/xdpd>).
 
 The version of both is 
 
 Building
 ========
+=======
+This revision is based on rofl-core and xdpd master-0.3
+>>>>>>> fd30a56dbed3f6585d18e4a784f2f2d9491dfec9
 ````
 git clone https://github.com/bisdn/rofl-core.git
 cd rofl-core
 git checkout master-0.3
+<<<<<<< HEAD
 sh autogen.sh
 cd build
 ../configure
@@ -40,6 +45,13 @@ cd build
 ../configure
 make
 ````
+=======
+````
+
+Building
+========
+Build and install rofl-core
+>>>>>>> fd30a56dbed3f6585d18e4a784f2f2d9491dfec9
 
 For details on installation and dependencies please refer to xdpd/rofl-core project.
 
