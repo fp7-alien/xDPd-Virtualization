@@ -25,7 +25,6 @@ Makefile
 .deps
 .libs
 autom4te.cache
-config.*
 configure
 install-sh
 ltmain.sh
@@ -34,7 +33,8 @@ depcomp
 libtool
 m4
 ar-lib
-
+config.guess
+config.sub
 /build/*
 /build-*
 test-driver
