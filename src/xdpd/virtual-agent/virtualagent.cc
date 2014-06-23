@@ -956,3 +956,32 @@ of1x_write_actions_t* virtual_agent::write_actions_analysis(cofctl* ctl,
 	return new_write_actions;
 }
 
+bool virtual_agent::check_flowspace_existance(std::string flowspace_name,
+		uint64_t* switch_id, std::string* switch_name) {
+
+	flowspace_struct_t* temp_flowspace;
+	if (switch_id)
+	{
+		for (std::list<flowspace_struct_t*>::iterator it = virtual_agent::list_switch_by_id[*switch_id]->flowspace_struct_list.begin();
+				it != virtual_agent::list_switch_by_id[*switch_id]->flowspace_struct_list.end();
+				it++)
+		{
+			temp_flowspace = *it;
+			if (temp_flowspace->name == flowspace_name)
+				return true;
+		}
+	}
+	else if (switch_name)
+	{
+		for (std::list<flowspace_struct_t*>::iterator it = virtual_agent::list_switch_by_name[*switch_name]->flowspace_struct_list.begin();
+				it != virtual_agent::list_switch_by_name[*switch_name]->flowspace_struct_list.end();
+				it++)
+		{
+			temp_flowspace = *it;
+			if (temp_flowspace->name == flowspace_name)
+				return true;
+		}
+	}
+
+	return false;
+}

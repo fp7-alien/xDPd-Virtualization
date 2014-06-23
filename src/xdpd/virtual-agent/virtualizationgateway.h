@@ -27,6 +27,8 @@ public:
     virtual int removeFlowspace(const std::string& name);
 
 private:
+
+    int parse_priority(int priority);
 };
 
 #endif /* VIRTUALIZATIONGATEWAY_H_ */

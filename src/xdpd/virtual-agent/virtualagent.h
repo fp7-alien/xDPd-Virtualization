@@ -50,6 +50,8 @@ public:
 	static bool check_slice_existance(std::string slice_name, uint64_t switch_id);
 	static bool check_slice_existance(std::string slice_name, std::string switch_name);
 
+	static bool check_flowspace_existance(std::string flowspace_name, uint64_t* switch_id, std::string* switch_name);
+
 	virtual_agent();
 	virtual ~virtual_agent();
 
