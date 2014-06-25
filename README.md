@@ -15,14 +15,12 @@ Main characteristics of this virtualization technique are:
 
 IMPORTANT NOTES
 ===============
-<<<<<<< HEAD
 This software is based on rofl-core (<https://github.com/bisdn/rofl-core>) and xdpd (<https://github.com/bisdn/xdpd>).
 
-The version of both is 
+The version of both is 0.3
 
 Building
 ========
-=======
 This revision is based on rofl-core and xdpd master-0.3, so install rofl-core 0.3.
 
 ````
