@@ -23,37 +23,17 @@ The version of both is
 Building
 ========
 =======
-This revision is based on rofl-core and xdpd master-0.3
->>>>>>> fd30a56dbed3f6585d18e4a784f2f2d9491dfec9
-````
-git clone https://github.com/bisdn/rofl-core.git
-cd rofl-core
-git checkout master-0.3
-<<<<<<< HEAD
-sh autogen.sh
-cd build
-../configure
-make
-sudo make install
-````
+This revision is based on rofl-core and xdpd master-0.3, so install rofl-core 0.3.
 
 ````
 git clone https://github.com/fp7-alien/xDPd-Virtualization.git
 cd xDPd-Virtualization
+checkout v0.3.1
 sh autogen.sh
 cd build
 ../configure
 make
 ````
-=======
-````
-
-Building
-========
-Build and install rofl-core
->>>>>>> fd30a56dbed3f6585d18e4a784f2f2d9491dfec9
-
-For details on installation and dependencies please refer to xdpd/rofl-core project.
 
 Using
 =====
