@@ -263,4 +263,3 @@ bool va_switch::compare_match_flow(const of1x_packet_matches_t* pkt,
 	return NULL;
 }
 
-

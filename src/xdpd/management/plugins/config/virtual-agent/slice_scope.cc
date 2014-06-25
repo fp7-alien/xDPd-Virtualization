@@ -132,8 +132,6 @@ void slice_scope::post_validate(libconfig::Setting& setting,
 
 						// Connect the slice controller to the datapath
 						switch_manager::find_by_name(dp_name)->rpc_connect_to_ctl(address);
-
-
 						slice* slice_to_add = new slice(dp_name, switch_manager::dpid_from_name(dp_name), slice_name, address, ports_list);
 						virtual_agent::add_slice(slice_to_add, true);
 
