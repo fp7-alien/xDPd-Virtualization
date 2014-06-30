@@ -56,7 +56,7 @@ int virtualization_gateway::addFlowspace(const Json::Value& listDatapaths,
 	{
 		if (!switch_manager::find_by_name(listDatapaths[i].asString()))
 		{
-			printf("il datapath %s non esiste\n",listDatapaths[i].asString().c_str());
+			ROFL_ERR("datapath %s doesn't exist\n",listDatapaths[i].asString().c_str());
 			return -2;
 		}
 	}
@@ -70,31 +70,19 @@ int virtualization_gateway::addFlowspace(const Json::Value& listDatapaths,
 			return -2;
 
 		//validate flowspace and slice name.
-		if (!virtual_agent::check_flowspace_existance(name,NULL,&switch_name) )
-		{
-			printf("%s valido ",switch_name.c_str());
-		}
-		else
-		{
+		if (virtual_agent::check_flowspace_existance(name,NULL,&switch_name) )
 			return -4;
-		}
 
-		if (virtual_agent::check_slice_existance(slice, switch_name))
-		{
-			printf("%s valido ",slice.c_str());
-		}
-		else
-		{
+		if (!virtual_agent::check_slice_existance(slice, switch_name))
 			return -4;
-		}
 
-		printf("Posso aggiungere al datapath %s il flowspace %s con destinazione slice %s\n",
+
+		ROFL_DEBUG("adding to datapath %s flowspace %s with destination slice %s\n",
 					sw->dpname.c_str(), name.c_str(), slice.c_str());
 
 		//validate flowspace_match
 		if (!matches["vlan_vid"] || !matches["vlan_vid"].isInt())
 		{
-			printf("vlan vid non presente o sbagliato\n");
 			return -5;
 		}
 		flowspace_struct_t* flowspaceStruct = new flowspace_struct_t;
@@ -114,7 +102,7 @@ int virtualization_gateway::addFlowspace(const Json::Value& listDatapaths,
 		//Update the match in the list
 		flowspaceStruct->match_list.push_front(match_vlanvid);
 
-		virtual_agent::list_switch_by_name["dp1"]->flowspace_struct_list.push_front(flowspaceStruct);
+		virtual_agent::list_switch_by_name[switch_name]->flowspace_struct_list.push_front(flowspaceStruct);
 	}
 
 
@@ -150,13 +138,13 @@ int virtualization_gateway::addSlice(const Json::Value& datapaths,
 			slice* slice_to_add = new slice(dpName, switch_manager::dpid_from_name(sw->dpname),name, address,ports_list);
 			if ( virtual_agent::add_slice(slice_to_add, true) )
 				switch_manager::rpc_connect_to_ctl(switch_manager::dpid_from_name(sw->dpname),address);
-			printf("Slice %s added\n", slice_to_add->name.c_str());
+			ROFL_DEBUG("Slice %s added\n", slice_to_add->name.c_str());
 		} catch (eSliceExist) {
-			printf("Slice already exist\n");
+			ROFL_ERR("Slice already exist\n");
 		}
 		catch(eSliceConfigError)
 		{
-			printf("Slice error\n");
+			ROFL_ERR("Slice error\n");
 		}
 
 	}
@@ -178,10 +166,10 @@ int virtualization_gateway::deleteSlice(const std::string& name) {
 			sw->rpc_disconnect_from_ctl(slice_to_remove->address);
 			std::string slice_name = slice_to_remove->name;
 			virtual_agent::list_switch_by_name[sw->dpname]->slice_list.remove(slice_to_remove);
-			printf("Slice %s removed from %s\n",slice_name.c_str(), sw->dpname.c_str());
+			ROFL_DEBUG("Slice %s removed from %s\n",slice_name.c_str(), sw->dpname.c_str());
 		}
 		else
-			printf("Slice %s not present\n", name.c_str());
+			ROFL_ERR("Slice %s not present\n", name.c_str());
 	}
 
 	return 0;
@@ -230,12 +218,12 @@ return flowspace_list;
 Json::Value virtualization_gateway::listSlice() {
 
 	Json::Value slice_list;
+
 	std::list<std::string> datapath_list = switch_manager::list_sw_names();
 	for (std::list<std::string>::iterator it = datapath_list.begin();
 			it != datapath_list.end();
 			it++)
 	{
-		std::cout << "switch " << *it->c_str() << " ha " << virtual_agent::list_switch_by_name[*it]->slice_list.size() << " slices\n";
 		for (std::list<slice*>::iterator sl_it = virtual_agent::list_switch_by_name[*it]->slice_list.begin();
 				sl_it != virtual_agent::list_switch_by_name[*it]->slice_list.end();
 				sl_it++)
@@ -250,8 +238,32 @@ return slice_list;
 
 Json::Value virtualization_gateway::listSliceInfo(const std::string& name) {
 
-	Json::Value return_value;
-	return return_value;
+	Json::Value slice_info;
+
+	Json::Value dp_js;
+	Json::Value rules_js;
+	slice* slice = NULL;
+	bool ip_port = false;
+	std::list<std::string> datapath_list = switch_manager::list_sw_names();
+	for (std::list<std::string>::iterator it = datapath_list.begin();
+			it != datapath_list.end();
+			it++)
+	{
+		slice = virtual_agent::check_slice_existance(name, *it);
+		if (slice)
+		{
+			dp_js.append(*it);
+			if (!ip_port)
+			{
+				slice_info["address"] = slice->address.c_str();
+				ip_port = true;
+			}
+		}
+	}
+
+	if (!dp_js.empty())
+		slice_info["datapath"] = dp_js;
+	return slice_info;
 }
 
 int virtualization_gateway::removeFlowspace(const std::string& name) {
@@ -284,13 +296,13 @@ bool virtualization_gateway::check_datapaths(Json::Value datapaths, std::string 
 		//Validate slice name in the datapath
 		if (virtual_agent::check_slice_existance(name, sw->dpname))
 		{
-			printf("Slice \"%s\" already present\n",name.c_str());
+			ROFL_DEBUG("Slice \"%s\" already present\n",name.c_str());
 			return false;
 		}
 
 		if (!sw)
 		{
-			printf("Switch %s not found\n", dpName.c_str());
+			ROFL_ERR("Switch %s not found\n", dpName.c_str());
 			return false;
 		}
 
@@ -300,12 +312,12 @@ bool virtualization_gateway::check_datapaths(Json::Value datapaths, std::string 
 		{
 			if (!sw->port_is_present(json_port_list[i].asString()))
 			{
-				printf("Port %s not present\n", json_port_list[i].asString().c_str());
+				ROFL_ERR("Port %s not present\n", json_port_list[i].asString().c_str());
 				return false;
 			}
 			else
 			{
-				printf("Port %s present\n", json_port_list[i].asString().c_str());
+				ROFL_DEBUG("Port %s present\n", json_port_list[i].asString().c_str());
 			}
 		}
 	}

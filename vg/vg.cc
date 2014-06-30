@@ -20,11 +20,11 @@ void help(){
 	printf("Number should be:\n");
 	printf("\t 1 = add_slice\n");
 	printf("\t 2 = add_flowspace\n");
-	printf("\t 3 = list_slice\n");
+	printf("\t 3 = list_slices\n");
 	printf("\t 4 = list_flowspace\n");
 	printf("\t 5 = delete_slice\n");
 	printf("\t 6 = list_datapaths\n");
-	printf("\t 7 = list_slice\n");
+	printf("\t 7 = list_slice info\n");
 	printf("\t 8 = list_flowspace\n");
 }
 
@@ -85,8 +85,8 @@ int main(int argc, char **argv){
 			}
 				break;
 		case 3:
-			printf("List slice\n");
-				break;
+			std::cout << "lista slice = " << client.listSlice();
+			break;
 		case 4:
 			std::cout << "lista flowspace = " << client.listFlowspaces();
 				break;
@@ -101,7 +101,7 @@ int main(int argc, char **argv){
 			break;
 
 		case 7:
-			std::cout << "lista slice = " << client.listSlice();
+			std::cout << client.listSliceInfo("tom");
 			break;
 
 		default: help();

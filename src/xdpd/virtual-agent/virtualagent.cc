@@ -111,7 +111,7 @@ bool virtual_agent::check_slice_existance(std::string slice_name, uint64_t switc
 	return false;
 }
 
-bool virtual_agent::check_slice_existance(std::string slice_name,
+slice* virtual_agent::check_slice_existance(std::string slice_name,
 		std::string switch_name) {
 
 	slice* temp_slice;
@@ -121,10 +121,10 @@ bool virtual_agent::check_slice_existance(std::string slice_name,
 	{
 		temp_slice = *it;
 		if (temp_slice->name == slice_name)
-			return true;
+			return temp_slice;
 	}
 
-	return false;
+	return NULL;
 }
 
 bool virtual_agent::is_active() {

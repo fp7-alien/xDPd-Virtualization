@@ -77,6 +77,7 @@ int main(int argc, char** argv){
 	memset(s_dbg, 0, sizeof(s_dbg));
 	snprintf(s_dbg, sizeof(s_dbg)-1, "%d", (int)csyslog::DBG);
 
+	bool vg = false;
 	{ //Make valgrind happy
 		cunixenv env_parser(argc, argv);
 		
@@ -88,6 +89,11 @@ int main(int argc, char** argv){
 		 * If set -n it works like normal xdpd
 		 */
 		env_parser.add_option(coption(true, NO_ARGUMENT, 'n', "no-virtualization", "Deactivate virtualization", std::string("") ));
+
+		/**
+		 *
+		 */
+		env_parser.add_option(coption(true, NO_ARGUMENT, 'g', "virtual-gateway", "Activate Virtualization Gateway listening", std::string("") ));
 
 		//Parse
 		env_parser.parse_args();
@@ -113,7 +119,11 @@ int main(int argc, char** argv){
 		if (env_parser.is_arg_set("no-virtualization"))
 			virtual_agent::active_va(false);
 		else
+		{
 			virtual_agent::active_va(true);
+			if (env_parser.is_arg_set("virtual-gateway"))
+				vg = true;
+		}
 	}
 	//Forwarding module initialization
 	if(fwd_module_init() != AFA_SUCCESS){
@@ -126,8 +136,7 @@ int main(int argc, char** argv){
 	//Load plugins
 	optind=0;
 	plugin_manager::init(argc, argv);
-
-	if (virtual_agent::is_active())
+	if (virtual_agent::is_active() && vg)
 	{
 		virtualization_gateway*  vg= new virtualization_gateway(6600);
 		vg->nothing();
