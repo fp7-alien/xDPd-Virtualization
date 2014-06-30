@@ -29,6 +29,7 @@ public:
 private:
 
     int parse_priority(int priority);
+    bool check_datapaths(Json::Value datapaths, std::string name);
 };
 
 #endif /* VIRTUALIZATIONGATEWAY_H_ */

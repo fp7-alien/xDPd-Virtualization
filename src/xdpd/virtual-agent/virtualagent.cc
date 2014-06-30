@@ -43,6 +43,7 @@ using namespace xdpd;
 std::map<uint64_t, va_switch*> virtual_agent::list_switch_by_id;
 std::map<std::string, va_switch*> virtual_agent::list_switch_by_name;
 std::map<std::string, uint32_t> virtual_agent::slice_id_map;
+std::list<va_switch*> virtual_agent::list_va_switch;
 bool* virtual_agent::active = NULL;
 uint32_t virtual_agent::slice_counter = 0;
 
@@ -55,8 +56,11 @@ virtual_agent::~virtual_agent() {
 	// TODO Auto-generated destructor stub
 }
 
-void virtual_agent::add_slice(slice* slice_to_add, bool connect) {
-
+bool virtual_agent::add_slice(slice* slice_to_add, bool connect) {
+	if (check_slice_existance(slice_to_add->name, slice_to_add->dp_name))
+	{
+		throw eSliceExist();
+	}
 	uint64_t id = slice_to_add->dp_id;
 	std::string dp_name = slice_to_add->dp_name;
 	uint32_t slice_ID = virtual_agent::increase_slice_counter(slice_to_add->name);
@@ -64,13 +68,16 @@ void virtual_agent::add_slice(slice* slice_to_add, bool connect) {
 	{
 		slice_to_add->slice_id = slice_ID;
 		virtual_agent::list_switch_by_id[id]->slice_list.push_front(slice_to_add);
-		virtual_agent::list_switch_by_name[dp_name]->slice_list.push_front(slice_to_add);
+		//virtual_agent::list_switch_by_name[dp_name]->slice_list.push_front(slice_to_add);
 		virtual_agent::list_switch_by_id[id]->controller_map[slice_to_add->name] = switch_manager::find_by_dpid(id)->getEndpoint()->return_last_ctl();
 	}
 	else
 	{
 		ROFL_ERR("Impossible to add slice %s. Max slice ID reaches\n", slice_to_add->name.c_str());
+		throw eSliceConfigError();
 	}
+std::cout << "VAswitch " << slice_to_add->dp_name.c_str() << " ha " << virtual_agent::list_switch_by_name[slice_to_add->dp_name.c_str()]->slice_list.size() << " slices\n";
+	return true;
 }
 
 
@@ -104,7 +111,7 @@ bool virtual_agent::check_slice_existance(std::string slice_name, uint64_t switc
 	return false;
 }
 
-bool virtual_agent::check_slice_existance(std::string slice_name,
+slice* virtual_agent::check_slice_existance(std::string slice_name,
 		std::string switch_name) {
 
 	slice* temp_slice;
@@ -114,10 +121,10 @@ bool virtual_agent::check_slice_existance(std::string slice_name,
 	{
 		temp_slice = *it;
 		if (temp_slice->name == slice_name)
-			return true;
+			return temp_slice;
 	}
 
-	return false;
+	return NULL;
 }
 
 bool virtual_agent::is_active() {
@@ -811,6 +818,37 @@ rofl_result_t virtual_agent::add_flow_mod_match( of1x_flow_entry_t* entry, of1x_
 
 	return ROFL_SUCCESS;
 
+}
+
+va_switch* virtual_agent::get_vaswitch(uint64_t* id, std::string* name) {
+
+
+	if (id && name )
+		return NULL;
+
+	for (std::list<va_switch*>::iterator it = list_va_switch.begin();
+			it != list_va_switch.end();
+			it++)
+	{
+		va_switch* vaswitch = *it;
+
+		if (!id && name && vaswitch->dp_name == *name) //case with name passe
+		{
+			return vaswitch;
+		}
+		else if (id && !name && vaswitch->dp_id == *id) //case with id passed
+		{
+			return vaswitch;
+		}
+		else if (id && name && vaswitch->dp_id == *id && vaswitch->dp_name == *name) //case with both id and name passed
+		{
+			return vaswitch;
+		}
+		else
+			return NULL;
+	}
+
+return NULL;
 }
 
 /**

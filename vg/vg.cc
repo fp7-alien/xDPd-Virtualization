@@ -20,8 +20,12 @@ void help(){
 	printf("Number should be:\n");
 	printf("\t 1 = add_slice\n");
 	printf("\t 2 = add_flowspace\n");
-	printf("\t 3 = list_slice\n");
+	printf("\t 3 = list_slices\n");
 	printf("\t 4 = list_flowspace\n");
+	printf("\t 5 = delete_slice\n");
+	printf("\t 6 = list_datapaths\n");
+	printf("\t 7 = list_slice info\n");
+	printf("\t 8 = list_flowspace\n");
 }
 
 int main(int argc, char **argv){
@@ -52,14 +56,12 @@ int main(int argc, char **argv){
 			printf("Add slice\n");
 
 			std::string slice_ip = "127.0.0.1";
-			std::string slice_name = "daniel";
+			std::string slice_name = "fromVG";
 			int slice_port = 6611;
 
 			//datapaths info
 			Json::Value port_list_dp1;
-			port_list_dp1.append("port1_1");
-			port_list_dp1.append("port2_1");
-			port_list_dp1.append("port3_1");
+			port_list_dp1.append("tap3");
 
 			Json::Value datapaths_list;
 			datapaths_list["dp1"] = port_list_dp1;
@@ -83,11 +85,25 @@ int main(int argc, char **argv){
 			}
 				break;
 		case 3:
-			printf("List slice\n");
-				break;
+			std::cout << "lista slice = " << client.listSlice();
+			break;
 		case 4:
-			printf("List flowspace\n");
+			std::cout << "lista flowspace = " << client.listFlowspaces();
 				break;
+
+		case 5:
+			printf("Remove slice\n");
+			result = client.deleteSlice("alice");
+			break;
+
+		case 6:
+			std::cout << "lista datapath = " << client.listDatapaths();
+			break;
+
+		case 7:
+			std::cout << client.listSliceInfo("tom");
+			break;
+
 		default: help();
 				break;
 		}

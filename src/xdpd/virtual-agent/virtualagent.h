@@ -34,21 +34,29 @@
 #define VIRTUALAGENT_H_
 using namespace xdpd;
 
+class eVAbase		: public cerror {};	// base error class for virtualization agent
+class eSliceConfigError: public eVAbase {};
+class eSliceExist	: public eVAbase {};
+
 class virtual_agent {
+
+private:
+	static std::list<va_switch*> list_va_switch;
 
 public:
 
 	// List of switch
 	//TODO:[VA]use double linked list
+	static va_switch* get_vaswitch(uint64_t* id = NULL, std::string* name = NULL);
 	static std::map<uint64_t, va_switch*> list_switch_by_id;
 	static std::map<std::string, va_switch*> list_switch_by_name;
 
-	static void add_slice(slice* slice_to_add, bool connect=true);
+	static bool add_slice(slice* slice_to_add, bool connect=true);
 	static void add_switch(va_switch* _switch);
 
 	//TODO:[VA]merge into single function
 	static bool check_slice_existance(std::string slice_name, uint64_t switch_id);
-	static bool check_slice_existance(std::string slice_name, std::string switch_name);
+	static slice* check_slice_existance(std::string slice_name, std::string switch_name);
 
 	static bool check_flowspace_existance(std::string flowspace_name, uint64_t* switch_id, std::string* switch_name);
 
