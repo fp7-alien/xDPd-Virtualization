@@ -23,6 +23,8 @@ Building
 ========
 This revision is based on rofl-core and xdpd master-0.3, so install rofl-core 0.3.
 
+This software uses libjson-rpc-cpp (<https://github.com/cinemast/libjson-rpc-cpp>). Compilie and install it before compiling xDPd-Virtualization
+
 ````
 git clone https://github.com/fp7-alien/xDPd-Virtualization.git
 cd xDPd-Virtualization
