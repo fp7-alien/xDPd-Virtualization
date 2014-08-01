@@ -23,7 +23,19 @@ Building
 ========
 This revision is based on rofl-core and xdpd master-0.3, so install rofl-core 0.3.
 
-This software uses libjson-rpc-cpp (<https://github.com/cinemast/libjson-rpc-cpp>). Compilie and install it before compiling xDPd-Virtualization
+This software uses libjson-rpc-cpp (<https://github.com/cinemast/libjson-rpc-cpp>). 
+Compilie and install it before compiling xDPd-Virtualization
+````
+sudo apt-get install libcurl4-openssl-dev cmake
+git clone https://github.com/cinemast/libjson-rpc-cpp
+cd libjson-rpc-cpp
+git checkout 57026a236af2cbf54e4526f8952e1a0672567973
+cd build
+cmake .. && make
+sudo make install
+sudo ldconfig   
+
+````
 
 ````
 git clone https://github.com/fp7-alien/xDPd-Virtualization.git
