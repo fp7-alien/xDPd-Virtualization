@@ -74,8 +74,10 @@ public:
 	 */
 	cofctl* return_last_ctl() {
 		cofctl *controller = NULL;
+		int i = 0;
 		for (std::set<cofctl*>::iterator it = ofctl_set.begin(); it != ofctl_set.end(); ++it)
 		{
+			i++;
 			controller = *(it);
 		}
 		return controller;

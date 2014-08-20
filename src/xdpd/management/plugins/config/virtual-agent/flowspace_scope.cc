@@ -218,6 +218,8 @@ if (virtual_agent::is_active() ) //Otherwise skip all this function
 					flowspace_scope::validate_flowspace_registration(setting,dry_run,flowspaceStruct);
 
 					virtual_agent::list_switch_by_name[_flowspace_dpname]->flowspace_struct_list.push_front(flowspaceStruct);
+					virtual_agent::add_flowspace(flowspaceStruct);
+
 					//virtual_agent::list_switch_by_name[_flowspace_dpname]->flowspace_struct_list.sort(order_by_priority);
 
 					/////

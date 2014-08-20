@@ -61,7 +61,8 @@ int main(int argc, char **argv){
 
 			//datapaths info
 			Json::Value port_list_dp1;
-			port_list_dp1.append("tap3");
+			port_list_dp1.append("tap1");
+			port_list_dp1.append("tap2");
 
 			Json::Value datapaths_list;
 			datapaths_list["dp1"] = port_list_dp1;
@@ -74,12 +75,12 @@ int main(int argc, char **argv){
 		case 2: {
 			printf("Add flowspace\n");
 			Json::Value matches;
-			matches["vlan_vid"] = 10;
+			matches["vlan_vid"] = 20;
 			Json::Value dpts;
 			dpts.append("dp1");
-			std::string flowspaceName = "FS1";
+			std::string flowspaceName = "fromVGfs";
 			int priority = 15;
-			std::string sliceName = "alice";
+			std::string sliceName = "fromVG";
 			result = client.addFlowspace(dpts,matches,flowspaceName,priority,sliceName);
 			printf("Result %i\n", result);
 			}

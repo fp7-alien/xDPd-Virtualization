@@ -41,7 +41,6 @@ va_switch::~va_switch() {
 slice* va_switch::select_slice(cofctl* controller) {
 
 	std::map<std::string, cofctl*>::iterator iter;
-
 	//iterate through controller map
 	for (iter = this->controller_map.begin();
 			iter != this->controller_map.end();
@@ -50,7 +49,8 @@ slice* va_switch::select_slice(cofctl* controller) {
 		if (iter->second == controller)
 			return this->get_slice(iter->first);
 	}
-
+	ROFL_ERR("[va] Controller %s (%s) not found\n", controller->c_str(), controller->get_peer_addr().c_str());
+	throw eVActlNotFound();
 	return NULL;
 
 }

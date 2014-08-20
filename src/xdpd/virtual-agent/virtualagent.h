@@ -37,11 +37,14 @@ using namespace xdpd;
 class eVAbase		: public cerror {};	// base error class for virtualization agent
 class eSliceConfigError: public eVAbase {};
 class eSliceExist	: public eVAbase {};
+class eSliceNotFound : public eVAbase {};
 
 class virtual_agent {
 
 private:
 	static std::list<va_switch*> list_va_switch;
+	static std::list<slice*> all_slices_list;
+	static std::list<flowspace_struct_t*> all_flowspaces_list;
 
 public:
 
@@ -52,6 +55,7 @@ public:
 	static std::map<std::string, va_switch*> list_switch_by_name;
 
 	static bool add_slice(slice* slice_to_add, bool connect=true);
+	static bool add_flowspace(flowspace_struct_t* flowspace_to_add);
 	static void add_switch(va_switch* _switch);
 
 	//TODO:[VA]merge into single function
@@ -114,6 +118,8 @@ public:
 	static uint32_t obatin_sliceID(uint32_t groupID);
 	static uint32_t obatin_groupID(uint32_t groupID);
 
+	static void write_cfg(std::string name);
+
 
 private:
 
@@ -152,6 +158,9 @@ private:
 	static of1x_write_actions_t* write_actions_analysis(cofctl *ctl, of1x_write_actions_t *action_group, openflow_switch* sw);
 
 	static of1x_match_t* check_match_existance(flowspace_match_type type, of1x_flow_entry_t* entry);
+
+	static slice* get_slice_by_name(std::string slice_name);
+
 
 };
 

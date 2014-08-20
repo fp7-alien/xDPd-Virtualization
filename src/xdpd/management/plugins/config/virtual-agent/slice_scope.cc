@@ -131,8 +131,11 @@ void slice_scope::post_validate(libconfig::Setting& setting,
 						caddress address = caddress(AF_INET, slice_ip.c_str(), port);
 
 						// Connect the slice controller to the datapath
-						switch_manager::find_by_name(dp_name)->rpc_connect_to_ctl(address);
-						slice* slice_to_add = new slice(dp_name, switch_manager::dpid_from_name(dp_name), slice_name, address, ports_list);
+						cofctl* controller = NULL;
+						controller = switch_manager::find_by_name(dp_name)->rpc_connect_to_ctl_return(address, controller);
+
+						//slice* slice_to_add = new slice(dp_name, switch_manager::dpid_from_name(dp_name), slice_name, address, ports_list, controller);
+						slice* slice_to_add = new slice(dp_name, switch_manager::dpid_from_name(dp_name),slice_name, port, slice_ip, ports_list, controller );
 						virtual_agent::add_slice(slice_to_add, true);
 
 						ROFL_INFO("\nNew slice added %s, %s:%i. ID=%i\n", slice_name.c_str(), slice_ip.c_str(), port, slice_to_add->slice_id);

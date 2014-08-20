@@ -97,8 +97,13 @@ afa_result_t openflow10_switch::notify_port_status_changed(switch_port_t* port){
 /*
 * Connecting and disconnecting from a controller entity
 */
-void openflow10_switch::rpc_connect_to_ctl(caddress const& controller_addr){
+void openflow10_switch::rpc_connect_to_ctl(caddress const& controller_addr, cofctl* ctl){
 	endpoint->rpc_connect_to_ctl(ofswitch->of_ver, 0, controller_addr);
+}
+
+cofctl* openflow10_switch::rpc_connect_to_ctl_return(caddress const& controller_addr, cofctl* ctl)
+{
+	return endpoint->rpc_connect_to_ctl_return(ofswitch->of_ver, 0, controller_addr);
 }
 
 void openflow10_switch::rpc_disconnect_from_ctl(caddress const& controller_addr){

@@ -171,7 +171,7 @@ switch_manager::rpc_connect_to_ctl(uint64_t dpid, caddress const& ra)
 
 	//Get switch instance
 	openflow_switch* dp = switch_manager::switchs[dpid];
-	dp->rpc_connect_to_ctl(ra);
+	dp->rpc_connect_to_ctl(ra, NULL);
 }
 
 

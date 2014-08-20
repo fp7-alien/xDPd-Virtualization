@@ -1521,8 +1521,18 @@ of10_endpoint::handle_ctrl_open(cofctl *ctrl)
 {
 	if (virtual_agent::is_active())
 	{
+		try{
 		slice* slice = virtual_agent::list_switch_by_id[sw->dpid]->select_slice(ctrl);
-		ROFL_INFO("[sw: %s] Slice %s (%s:%u) has CONNECTED. \n", sw->dpname.c_str() ,slice->name.c_str(),ctrl->get_peer_addr().c_str());
+		//ROFL_INFO("[sw: %s] Slice %s (%s:%u) has CONNECTED. \n", sw->dpname.c_str() ,slice->name.c_str(),ctrl->get_peer_addr().c_str());
+		ROFL_INFO("Slice %s ", slice->name.c_str());
+		ROFL_INFO("switch %s ", sw->dpname.c_str());
+		ROFL_INFO("address %s in CONNECTED STATE\n", ctrl->get_peer_addr().c_str());
+		}
+		catch (eVActlNotFound) {
+			printf("errore\n");
+			throw;
+		}
+		printf("continue\n");
 	}
 	else
 		ROFL_INFO("[sw: %s]Controller %s:%u is in CONNECTED state. \n", sw->dpname.c_str() , ctrl->get_peer_addr().c_str()); //FIXME: add role

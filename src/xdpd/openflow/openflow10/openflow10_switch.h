@@ -83,7 +83,9 @@ public:
 	 /*
 	 * Connecting and disconnecting from a controller entity
 	 */
-	virtual void rpc_connect_to_ctl(caddress const& controller_addr);
+	virtual void rpc_connect_to_ctl(caddress const& controller_addr, cofctl* ctl=NULL);
+
+	virtual cofctl* rpc_connect_to_ctl_return(caddress const& controller_addr, cofctl* ctl);
 
 	virtual void rpc_disconnect_from_ctl(caddress const& controller_addr);
 

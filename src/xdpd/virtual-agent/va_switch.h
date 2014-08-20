@@ -22,6 +22,9 @@
 #include "slice.h"
 #include "flowspace.h"
 
+class eVAswitch		: public cerror {};
+class eVActlNotFound: public eVAswitch {};
+
 class va_switch {
 public:
 

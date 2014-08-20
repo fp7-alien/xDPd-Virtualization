@@ -25,7 +25,7 @@ using namespace std;
 
 //namespace xdpd {
 
-class slice {
+class slice{
 public:
 
 	std::string dp_name ;
@@ -34,12 +34,18 @@ public:
 	std::string name;
 	std::vector<std::string> ports_list;
 
+	std::string ip_string;
+	int port_int;
+
+	cofctl* controller; //Instance of controller related to slice
+
 	// Slice id set by virtual agent
 	uint32_t slice_id;
 
 	virtual ~slice();
 
-	slice(std::string dp_name, uint64_t dp_id, std::string name, caddress address, std::vector<std::string> ports_list);
+	//slice(std::string dp_name, uint64_t dp_id, std::string name, caddress address, std::vector<std::string> ports_list, cofctl* controller=NULL);
+	slice(std::string dp_name, uint64_t dp_id, std::string name, int port, std::string ip, std::vector<std::string> ports_list, cofctl* controller=NULL);
 
 	slice(caddress address);
 

@@ -1,6 +1,7 @@
 #include "port_manager.h"
 #include <rofl/common/utils/c_logger.h>
 
+#include "../virtual-agent/virtualagent.h"
 using namespace xdpd;
 
 
@@ -51,6 +52,11 @@ void port_manager::attach_port_to_switch(uint64_t dpid, std::string port_name, u
 
 	ROFL_INFO("[port_manager] Port %s attached to switch with dpid 0x%llx\n", port_name.c_str(), (long long unsigned)dpid);
 	*of_port_num = i;
+
+	if (virtual_agent::is_active())
+	{
+		virtual_agent::list_switch_by_id[dpid]->port_list.push_back(port_name);
+	}
 }
 
 //Port attachment/detachment

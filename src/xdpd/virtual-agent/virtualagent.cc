@@ -17,12 +17,15 @@
  */
 
 #include "virtualagent.h"
+#include <libconfig.h++>
 
 
 #include "slice.h"
 #include <iomanip>
 #include "../management/port_manager.h"
 #include "../management/switch_manager.h"
+
+#include <sstream>
 
 #include "../openflow/openflow10/of10_translation_utils.h"
 
@@ -38,12 +41,15 @@
 #define slice_ID_mask 0xFFF00000	//first 12 bit
 
 using namespace xdpd;
+using namespace libconfig;
 
 // static initialization
 std::map<uint64_t, va_switch*> virtual_agent::list_switch_by_id;
 std::map<std::string, va_switch*> virtual_agent::list_switch_by_name;
 std::map<std::string, uint32_t> virtual_agent::slice_id_map;
 std::list<va_switch*> virtual_agent::list_va_switch;
+std::list<slice*> virtual_agent::all_slices_list;
+std::list<flowspace_struct_t*>virtual_agent::all_flowspaces_list;
 bool* virtual_agent::active = NULL;
 uint32_t virtual_agent::slice_counter = 0;
 
@@ -56,10 +62,42 @@ virtual_agent::~virtual_agent() {
 	// TODO Auto-generated destructor stub
 }
 
+bool virtual_agent::add_flowspace(flowspace_struct_t* flowspace_to_add) {
+	bool exist = false;
+	for (std::list<flowspace_struct_t*>::iterator iter = virtual_agent::all_flowspaces_list.begin();
+			iter != virtual_agent::all_flowspaces_list.end();
+			iter++)
+	{
+		flowspace_struct_t* temp_flow = *iter;
+		if (temp_flow->name == flowspace_to_add->name)
+		{
+			exist = true;
+			continue;
+		}
+	}
+	if (!exist)
+	{
+		all_flowspaces_list.push_back(flowspace_to_add);
+	}
+return true;
+}
+
 bool virtual_agent::add_slice(slice* slice_to_add, bool connect) {
 	if (check_slice_existance(slice_to_add->name, slice_to_add->dp_name))
 	{
 		throw eSliceExist();
+	}
+	if (slice_to_add->ports_list.empty())
+	{
+		std::vector<std::string> ports_list;
+		std::vector<std::string>::iterator port_iter;
+		for (port_iter = switch_manager::find_by_name(slice_to_add->dp_name)->port_list.begin();
+				port_iter != switch_manager::find_by_name(slice_to_add->dp_name)->port_list.end();
+				port_iter++)
+		{
+			std::string port = *port_iter;
+			ports_list.push_back(port);
+		}
 	}
 	uint64_t id = slice_to_add->dp_id;
 	std::string dp_name = slice_to_add->dp_name;
@@ -69,14 +107,47 @@ bool virtual_agent::add_slice(slice* slice_to_add, bool connect) {
 		slice_to_add->slice_id = slice_ID;
 		virtual_agent::list_switch_by_id[id]->slice_list.push_front(slice_to_add);
 		//virtual_agent::list_switch_by_name[dp_name]->slice_list.push_front(slice_to_add);
-		virtual_agent::list_switch_by_id[id]->controller_map[slice_to_add->name] = switch_manager::find_by_dpid(id)->getEndpoint()->return_last_ctl();
+		if (!slice_to_add->controller)
+		{
+			printf("Aggiungo il controller preso da return_last_ctl()\n");
+			virtual_agent::list_switch_by_id[id]->controller_map[slice_to_add->name] = switch_manager::find_by_dpid(id)->getEndpoint()->return_last_ctl();
+			printf("%s:%s\n",
+					virtual_agent::list_switch_by_id[id]->controller_map[slice_to_add->name]->get_peer_addr().c_str(),
+					virtual_agent::list_switch_by_id[id]->controller_map[slice_to_add->name]->c_str());
+		}
+		else
+		{
+			printf("Aggiungo il controller passato %s\n", slice_to_add->controller->get_peer_addr().c_str());
+			virtual_agent::list_switch_by_id[id]->controller_map[slice_to_add->name] = slice_to_add->controller;
+			printf("%s:%s\n",
+					virtual_agent::list_switch_by_id[id]->controller_map[slice_to_add->name]->get_peer_addr().c_str(),
+					virtual_agent::list_switch_by_id[id]->controller_map[slice_to_add->name]->c_str());
+		}
+
+		bool exist = false;
+		for (std::list<slice*>::iterator iter = all_slices_list.begin();
+				iter != all_slices_list.end();
+				iter++)
+		{
+			slice* iter_slice = *iter;
+			if (iter_slice->name==slice_to_add->name)
+			{
+				exist = true;
+				continue;
+			}
+		}
+		if (!exist)
+		{
+			all_slices_list.push_back(slice_to_add);
+		}
+
 	}
 	else
 	{
 		ROFL_ERR("Impossible to add slice %s. Max slice ID reaches\n", slice_to_add->name.c_str());
 		throw eSliceConfigError();
 	}
-std::cout << "VAswitch " << slice_to_add->dp_name.c_str() << " ha " << virtual_agent::list_switch_by_name[slice_to_add->dp_name.c_str()]->slice_list.size() << " slices\n";
+std::cout << "VAswitch " << slice_to_add->dp_name.c_str() << " ha " << virtual_agent::list_switch_by_name[slice_to_add->dp_name.c_str()]->controller_map.size() << " slices\n";
 	return true;
 }
 
@@ -822,7 +893,6 @@ rofl_result_t virtual_agent::add_flow_mod_match( of1x_flow_entry_t* entry, of1x_
 
 va_switch* virtual_agent::get_vaswitch(uint64_t* id, std::string* name) {
 
-
 	if (id && name )
 		return NULL;
 
@@ -1023,3 +1093,129 @@ bool virtual_agent::check_flowspace_existance(std::string flowspace_name,
 
 	return false;
 }
+
+void virtual_agent::write_cfg(std::string name) {
+	Config cfg;
+	try{
+		std::string command = "rm " + name;
+		int res = system(command.c_str());
+		std::cout << res;
+	}
+	catch(...)
+	{
+		std::cout << "File does not exists\n";
+	}
+
+	Setting &root = cfg.getRoot();
+	Setting &config = root.add("config", Setting::TypeGroup);
+	Setting &openflow = config.add("openflow", Setting::TypeGroup);
+	Setting &logicalswitches = openflow.add("logical-switches", Setting::TypeGroup);
+
+	//Logical switches
+	va_switch* tempSwitch;
+	for(std::map<uint64_t, va_switch*>::iterator it = virtual_agent::list_switch_by_id.begin();
+			it != virtual_agent::list_switch_by_id.end();
+			it++)
+	{
+		tempSwitch = it->second;
+		Setting &newsw = logicalswitches.add(tempSwitch->dp_name.c_str(), Setting::TypeGroup);
+
+		////////////////
+		//Switch setting
+		////////////////
+		ostringstream dpid;
+		dpid << std::hex << setw(3) << tempSwitch->dp_id;
+		newsw.add("dpid", Setting::TypeString) = "0x"+dpid.str();
+		newsw.add("version", Setting::TypeFloat) = (tempSwitch->of_switch_vs == OF_VERSION_10)?1.0:1.0;
+		newsw.add("num-of-tables", Setting::TypeInt) = 1;//(int)tempSwitch->no_table;
+
+		Setting &port = newsw.add("ports", Setting::TypeList);
+		for (std::list<std::string>::iterator port_iter = tempSwitch->port_list.begin();
+				port_iter != tempSwitch->port_list.end();
+				port_iter++)
+		{
+			std::string port_name = *port_iter;
+			port.add(Setting::TypeString) = port_name;
+		}
+
+
+	}
+
+	////////////////
+	//Empty virtual agent
+	////////////////
+	root.add("virtual-agent", Setting::TypeGroup);
+
+	////////////////
+	//Slice setting
+	////////////////
+	Setting &slice_group = root.add("slice", Setting::TypeGroup);
+	for (std::list<slice*>::iterator slice_iter = virtual_agent::all_slices_list.begin();
+			slice_iter != all_slices_list.end();
+			slice_iter++)
+	{
+		slice* temp_slice = *slice_iter;
+		Setting &slice_cfg = slice_group.add(temp_slice->name.c_str(), Setting::TypeGroup);
+		slice_cfg.add("ip", Setting::TypeString) = temp_slice->ip_string.c_str();
+		slice_cfg.add("port", Setting::TypeInt) = temp_slice->port_int;
+
+		for(std::map<uint64_t, va_switch*>::iterator it = virtual_agent::list_switch_by_id.begin();
+				it != virtual_agent::list_switch_by_id.end();
+				it++)
+		{
+			tempSwitch = it->second;
+			slice* another_slice = virtual_agent::check_slice_existance(temp_slice->name, tempSwitch->dp_name);
+			if (another_slice != NULL)
+			{
+				Setting &list_port = slice_cfg.add(tempSwitch->dp_name, Setting::TypeArray);
+				for (std::vector<std::string>::iterator slice_port_iter = another_slice->ports_list.begin();
+						slice_port_iter != another_slice->ports_list.end();
+						slice_port_iter++)
+				{
+					list_port.add(Setting::TypeString) = *slice_port_iter;
+				}
+			}
+		}
+	}
+
+	////////////////
+	//Flowspace setting
+	////////////////
+	Setting &flowspace_group = root.add("flowspace", Setting::TypeGroup);
+	for (std::list<flowspace_struct_t*>::iterator fs_it = all_flowspaces_list.begin();
+			fs_it != all_flowspaces_list.end();
+			fs_it++)
+	{
+		flowspace_struct_t *fs_temp = *fs_it;
+		Setting &flowspace = flowspace_group.add(fs_temp->name, Setting::TypeGroup);
+		flowspace.add("priority",Setting::TypeInt) = (int)fs_temp->priority;
+		flowspace.add("vlan_vid", Setting::TypeInt) = fs_temp->match_list.front()->value->value.u16;
+		flowspace.add("slice_action", Setting::TypeString) = fs_temp->slice.c_str();
+		Setting &flowspace_dpname = flowspace.add("flowspace_dpname", Setting::TypeList);
+		for(std::map<uint64_t, va_switch*>::iterator it = virtual_agent::list_switch_by_id.begin();
+				it != virtual_agent::list_switch_by_id.end();
+				it++)
+		{
+			tempSwitch = it->second;
+			if (virtual_agent::check_flowspace_existance(fs_temp->name,NULL, &tempSwitch->dp_name))
+			{
+				flowspace_dpname.add(Setting::TypeString) = tempSwitch->dp_name;
+			}
+		}
+	}
+
+	try{
+		cfg.writeFile(name.c_str());
+	}
+	catch(...)
+	{
+		std::cerr << "Error writing file\n";
+	}
+
+}
+
+slice* virtual_agent::get_slice_by_name(std::string slice_name) {
+	return NULL;
+}
+
+

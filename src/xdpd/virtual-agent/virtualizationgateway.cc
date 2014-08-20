@@ -17,6 +17,20 @@
 
 #include <rofl/common/crofbase.h>
 
+void *try_thread( void *ptr )
+{
+	slice* slice_to_add = (slice*) ptr;
+
+	cofctl* controller = NULL;
+	//controller = sw->rpc_connect_to_ctl_return(address, controller);
+
+	controller = switch_manager::find_by_dpid(slice_to_add->dp_id)->rpc_connect_to_ctl_return(slice_to_add->address, NULL);//switch_manager::rpc_connect_to_ctl(slice_to_add->dp_id,slice_to_add->address);
+	virtual_agent::add_slice(slice_to_add,true);
+	printf("%s\n", controller->c_str());
+	ciosrv::run();
+	return NULL;
+}
+
 virtualization_gateway::virtualization_gateway(int port):
 	AbstractstubServer(new jsonrpc::HttpServer(port)){
 	this->StartListening();
@@ -135,9 +149,26 @@ int virtualization_gateway::addSlice(const Json::Value& datapaths,
 		}
 
 		try {
-			slice* slice_to_add = new slice(dpName, switch_manager::dpid_from_name(sw->dpname),name, address,ports_list);
-			if ( virtual_agent::add_slice(slice_to_add, true) )
-				switch_manager::rpc_connect_to_ctl(switch_manager::dpid_from_name(sw->dpname),address);
+		//	slice* slice_to_add = new slice(dpName, switch_manager::dpid_from_name(sw->dpname),name, address,ports_list);
+		//	if ( virtual_agent::add_slice(slice_to_add, true) )
+		//	{
+				//cofctl* controller = NULL;
+				//controller = sw->rpc_connect_to_ctl_return(address, controller);
+				//sw->rpc_connect_to_ctl(address, controller);
+				//if (!controller)
+				//	printf("Controller null!\n");
+				//else
+				//	printf("Controller OK!\n");
+				slice* slice_to_add = new slice(dpName, switch_manager::dpid_from_name(sw->dpname),name, port, ip.c_str(),ports_list,NULL);
+				//virtual_agent::add_slice(slice_to_add, true);
+				pthread_t thread1;
+				int p1;
+				//const char *message1 = "Thread 1";
+				p1 = pthread_create( &thread1, NULL, try_thread, (void*) slice_to_add);
+				if (p1)
+					printf("Errore\n");
+
+			//}
 			ROFL_DEBUG("Slice %s added\n", slice_to_add->name.c_str());
 		} catch (eSliceExist) {
 			ROFL_ERR("Slice already exist\n");

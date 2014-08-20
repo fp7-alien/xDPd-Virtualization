@@ -86,9 +86,16 @@ public:
 	/**
 	 * Connecting and disconnecting from a controller entity
 	 */
-	virtual void rpc_connect_to_ctl(caddress const& controller_addr)=0;
+	virtual void rpc_connect_to_ctl(caddress const& controller_addr, cofctl* ctl)=0;
+
+	/**
+	 * Connecting and disconnecting from a controller entity returning controller instance
+	 */
+	virtual cofctl* rpc_connect_to_ctl_return(caddress const& controller_addr, cofctl* ctl)=0;
 
 	virtual void rpc_disconnect_from_ctl(caddress const& controller_addr)=0;
+
+	//virtual cofctl* rpc_connect_to_ctl_return(caddress const& controller_addr)=0;
 
 	of_endpoint* getEndpoint() {
 		return endpoint;

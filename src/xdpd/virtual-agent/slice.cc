@@ -22,15 +22,28 @@
 #include "flowspace.h"
 
 
-slice::slice(std::string dp_name, uint64_t dp_id, std::string name, caddress address, std::vector<std::string> ports_list) {
+//slice::slice(std::string dp_name, uint64_t dp_id, std::string name, caddress address, std::vector<std::string> ports_list, cofctl* controller) {
+//
+//	this->dp_id = dp_id;
+//	this->dp_name = dp_name;
+//	this->address = address;
+//	this->name = name;
+//	this->ports_list = ports_list;
+//	this->controller = controller;
+//
+//}
 
-	this->dp_id = dp_id;
-	this->dp_name = dp_name;
-	this->address = address;
-	this->name = name;
-	this->ports_list = ports_list;
-
-}
+//slice::slice(std::string dp_name, uint64_t dp_id, std::string name, int port, std::string ip, std::vector<std::string> ports_list, cofctl* controller=NULL)
+//{
+//	this->dp_id = dp_id;
+//	this->dp_name = dp_name;
+//	this->address = caddress(AF_INET, ip.c_str(), port);
+//	this->port_int = port;
+//	this->ip_string = ip;
+//	this->name = name;
+//	this->ports_list = ports_list;
+//	this->controller = controller;
+//}
 
 slice::~slice() {
 
@@ -58,4 +71,20 @@ bool slice::has_port(std::string port_name) {
 		}
 		return false;
 	}
+}
+
+slice::slice(std::string dp_name, uint64_t dp_id, std::string name, int port,
+		std::string ip, std::vector<std::string> ports_list,
+		cofctl* controller) {
+		this->dp_id = dp_id;
+		this->dp_name = dp_name;
+		this->address = caddress(AF_INET, ip.c_str(), port);
+		this->port_int = port;
+		this->ip_string = ip;
+		this->name = name;
+		this->ports_list = ports_list;
+		this->controller = controller;
+}
+
+slice::slice(caddress address) {
 }
