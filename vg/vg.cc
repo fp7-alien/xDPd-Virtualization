@@ -67,7 +67,7 @@ int main(int argc, char **argv){
 			Json::Value datapaths_list;
 			datapaths_list["dp1"] = port_list_dp1;
 
-			result = client.addSlice(datapaths_list,slice_ip.c_str(),slice_name.c_str(), slice_port);
+			result = client.addSlice(datapaths_list,slice_ip.c_str(),slice_name.c_str(), "1.0", slice_port);
 			printf("Result %i\n", result);
 		}
 			break;

@@ -5,6 +5,7 @@
             "name": "slice-name",
             "ip": "slice-ip",
             "port": 6633,
+            "ofversion": "1.0",
             "datapaths":{
 		      "dp1": ["port1", "port2"],
 		      "dp2": ["port3", "port4"]

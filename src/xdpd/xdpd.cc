@@ -141,7 +141,6 @@ int main(int argc, char** argv){
 		virtualization_gateway*  vg= new virtualization_gateway(6600);
 		vg->nothing();
 	}
-	virtual_agent::write_cfg("real-time-config.cfg");
 	//ciosrv run. Only will stop in Ctrl+C
 	ciosrv::run();
 

@@ -44,6 +44,7 @@ private:
 	static std::list<va_switch*> list_va_switch;
 	static std::list<slice*> all_slices_list;
 	static std::list<flowspace_struct_t*> all_flowspaces_list;
+	static std::list<va_switch*> all_switches_list;
 
 public:
 
@@ -57,6 +58,8 @@ public:
 	static bool add_slice(slice* slice_to_add, bool connect=true);
 	static bool add_flowspace(flowspace_struct_t* flowspace_to_add);
 	static void add_switch(va_switch* _switch);
+
+	static std::list<va_switch*> get_all_va_switch(of_version_t version);
 
 	//TODO:[VA]merge into single function
 	static bool check_slice_existance(std::string slice_name, uint64_t switch_id);

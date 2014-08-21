@@ -14,7 +14,7 @@ class AbstractstubServer : public jsonrpc::AbstractServer<AbstractstubServer>
             jsonrpc::AbstractServer<AbstractstubServer>(conn) 
         {
             this->bindAndAddMethod(new jsonrpc::Procedure("addFlowspace", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_INTEGER, "listDatapaths",jsonrpc::JSON_ARRAY,"matches",jsonrpc::JSON_OBJECT,"name",jsonrpc::JSON_STRING,"priority",jsonrpc::JSON_INTEGER,"slice",jsonrpc::JSON_STRING, NULL), &AbstractstubServer::addFlowspaceI);
-            this->bindAndAddMethod(new jsonrpc::Procedure("addSlice", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_INTEGER, "datapaths",jsonrpc::JSON_OBJECT,"ip",jsonrpc::JSON_STRING,"name",jsonrpc::JSON_STRING,"port",jsonrpc::JSON_INTEGER, NULL), &AbstractstubServer::addSliceI);
+            this->bindAndAddMethod(new jsonrpc::Procedure("addSlice", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_INTEGER, "datapaths",jsonrpc::JSON_OBJECT,"ip",jsonrpc::JSON_STRING,"name",jsonrpc::JSON_STRING,"ofversion",jsonrpc::JSON_STRING,"port",jsonrpc::JSON_INTEGER, NULL), &AbstractstubServer::addSliceI);
             this->bindAndAddMethod(new jsonrpc::Procedure("deleteSlice", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_INTEGER, "name",jsonrpc::JSON_STRING, NULL), &AbstractstubServer::deleteSliceI);
             this->bindAndAddMethod(new jsonrpc::Procedure("listDatapaths", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_ARRAY,  NULL), &AbstractstubServer::listDatapathsI);
             this->bindAndAddMethod(new jsonrpc::Procedure("listFlowspaceInfo", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "name",jsonrpc::JSON_STRING, NULL), &AbstractstubServer::listFlowspaceInfoI);
@@ -32,7 +32,7 @@ class AbstractstubServer : public jsonrpc::AbstractServer<AbstractstubServer>
 
         inline virtual void addSliceI(const Json::Value& request, Json::Value& response) 
         {
-            response = this->addSlice(request["datapaths"], request["ip"].asString(), request["name"].asString(), request["port"].asInt());
+            response = this->addSlice(request["datapaths"], request["ip"].asString(), request["name"].asString(), request["ofversion"].asString(), request["port"].asInt());
         }
 
         inline virtual void deleteSliceI(const Json::Value& request, Json::Value& response) 
@@ -72,7 +72,7 @@ class AbstractstubServer : public jsonrpc::AbstractServer<AbstractstubServer>
 
 
         virtual int addFlowspace(const Json::Value& listDatapaths, const Json::Value& matches, const std::string& name, const int& priority, const std::string& slice) = 0;
-        virtual int addSlice(const Json::Value& datapaths, const std::string& ip, const std::string& name, const int& port) = 0;
+        virtual int addSlice(const Json::Value& datapaths, const std::string& ip, const std::string& name, const std::string& ofversion, const int& port) = 0;
         virtual int deleteSlice(const std::string& name) = 0;
         virtual Json::Value listDatapaths() = 0;
         virtual Json::Value listFlowspaceInfo(const std::string& name) = 0;

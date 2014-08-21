@@ -36,12 +36,13 @@ p["slice"] = slice;
 
         }
 
-        int addSlice(const Json::Value& datapaths, const std::string& ip, const std::string& name, const int& port) throw (jsonrpc::JsonRpcException)
+        int addSlice(const Json::Value& datapaths, const std::string& ip, const std::string& name, const std::string& ofversion, const int& port) throw (jsonrpc::JsonRpcException)
         {
             Json::Value p;
             p["datapaths"] = datapaths; 
 p["ip"] = ip; 
 p["name"] = name; 
+p["ofversion"] = ofversion; 
 p["port"] = port; 
 
             Json::Value result = this->client->CallMethod("addSlice",p);

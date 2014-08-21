@@ -124,12 +124,47 @@ int virtualization_gateway::addFlowspace(const Json::Value& listDatapaths,
 }
 
 int virtualization_gateway::addSlice(const Json::Value& datapaths,
-		const std::string& ip, const std::string& name, const int& port) {
-
+		const std::string& ip, const std::string& name,
+		const std::string& ofversion, const int& port) {
+std::cout << "creazione slice\n";
 	//Validate switches and ports
-	if ( !check_datapaths(datapaths, name) )
+	if ( !check_datapaths(datapaths, name) && !datapaths.empty() )
 		return -1;
+	else if (datapaths.empty())
+	{
+		//All datapaths with ofversion given
+		std::list<va_switch*> datapaths_list = virtual_agent::get_all_va_switch( (ofversion=="1.0")?OF_VERSION_10:OF_VERSION_12 );
+		std::cout << "dimensione lista " << datapaths_list.size() << "\n";
+		for (std::list<va_switch*>::iterator it = datapaths_list.begin();
+				it != datapaths_list.end();
+				it++)
+		{
+			vector<std::string> port_list;
+			va_switch* temp_sw = *it;
+			std::vector<std::string>::iterator port_iter;
+			for (port_iter = switch_manager::find_by_name(temp_sw->dp_name)->port_list.begin();
+					port_iter != switch_manager::find_by_name(temp_sw->dp_name)->port_list.end();
+					port_iter++)
+			{
+				std::string port = *port_iter;
+				port_list.push_back(port);
+			}
 
+			try{
+				slice* slice_to_add = new slice(temp_sw->dp_name,temp_sw->dp_id, name, port, ip,port_list,NULL );
+				virtual_agent::add_slice(slice_to_add, true);
+			}
+			catch (eSliceExist) {
+				ROFL_ERR("Slice already exist\n");
+			}
+			catch(eSliceConfigError)
+			{
+				ROFL_ERR("Slice error\n");
+			}
+		}
+	}
+
+	else{
 	Json::Value::Members dpMemebers = datapaths.getMemberNames();
 	for (unsigned int i=0; i< dpMemebers.size(); i++)
 	{
@@ -145,10 +180,9 @@ int virtualization_gateway::addSlice(const Json::Value& datapaths,
 		for (unsigned int i = 0; i<json_port_list.size(); i++)
 		{
 			ports_list.push_back(json_port_list[i].asString());
-
 		}
 
-		try {
+/*		try {
 		//	slice* slice_to_add = new slice(dpName, switch_manager::dpid_from_name(sw->dpname),name, address,ports_list);
 		//	if ( virtual_agent::add_slice(slice_to_add, true) )
 		//	{
@@ -170,7 +204,12 @@ int virtualization_gateway::addSlice(const Json::Value& datapaths,
 
 			//}
 			ROFL_DEBUG("Slice %s added\n", slice_to_add->name.c_str());
-		} catch (eSliceExist) {
+		}*/
+		try{
+			slice* slice_to_add = new slice(dpName, switch_manager::dpid_from_name(sw->dpname),name, port, ip.c_str(),ports_list,NULL);
+			virtual_agent::add_slice(slice_to_add, true);
+		}
+		catch (eSliceExist) {
 			ROFL_ERR("Slice already exist\n");
 		}
 		catch(eSliceConfigError)
@@ -179,7 +218,9 @@ int virtualization_gateway::addSlice(const Json::Value& datapaths,
 		}
 
 	}
+	}
 
+	virtual_agent::write_cfg("real-time-config.cfg");
 	return 0;
 }
 

@@ -51,6 +51,7 @@ std::map<std::string, uint32_t> virtual_agent::slice_id_map;
 std::list<va_switch*> virtual_agent::list_va_switch;
 std::list<slice*> virtual_agent::all_slices_list;
 std::list<flowspace_struct_t*>virtual_agent::all_flowspaces_list;
+std::list<va_switch*>virtual_agent::all_switches_list;
 libconfig::Config virtual_agent::virtual_link_setting;
 bool* virtual_agent::virtual_agent::active = NULL;
 uint32_t virtual_agent::slice_counter = 0;
@@ -149,8 +150,10 @@ bool virtual_agent::add_slice(slice* slice_to_add, bool connect) {
 		ROFL_ERR("Impossible to add slice %s. Max slice ID reaches\n", slice_to_add->name.c_str());
 		throw eSliceConfigError();
 	}
-std::cout << "VAswitch " << slice_to_add->dp_name.c_str() << " ha " << virtual_agent::list_switch_by_name[slice_to_add->dp_name.c_str()]->controller_map.size() << " slices\n";
+	std::cout << "VAswitch " << slice_to_add->dp_name.c_str() << " ha " << virtual_agent::list_switch_by_name[slice_to_add->dp_name.c_str()]->controller_map.size() << " slices\n";
+
 	return true;
+
 }
 
 
@@ -161,6 +164,7 @@ void virtual_agent::add_switch(va_switch* _switch) {
 		uint64_t id = _switch->dp_id;
 		virtual_agent::list_switch_by_id[id] = _switch;
 		virtual_agent::list_switch_by_name[name] = _switch;
+		all_switches_list.push_back(_switch);
 	}
 	catch (...)
 	{
@@ -1242,4 +1246,17 @@ slice* virtual_agent::get_slice_by_name(std::string slice_name) {
 	return NULL;
 }
 
+std::list<va_switch*> virtual_agent::get_all_va_switch(of_version_t version) {
+	std::list<va_switch*> returned_list;
+	//std::list<va_switch*> all_switches_list;
+	for (std::list<va_switch*>::iterator it = all_switches_list.begin();
+			it != all_switches_list.end();
+			it++)
+	{
+		va_switch *tempSwitch = *it;
+		if (tempSwitch->of_switch_vs == version)
+			returned_list.push_back(tempSwitch);
+	}
 
+	return returned_list;
+}
