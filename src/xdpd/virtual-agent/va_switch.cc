@@ -25,10 +25,11 @@ va_switch::va_switch() {
 	// TODO Auto-generated constructor stub
 }
 
-va_switch::va_switch(std::string dp_name ,uint64_t dp_id)
+va_switch::va_switch(std::string dp_name ,uint64_t dp_id, of_version_t of_switch_vs)
 {
 	this->dp_id = dp_id;
 	this->dp_name = dp_name;
+	this->of_switch_vs = of_switch_vs;
 }
 
 

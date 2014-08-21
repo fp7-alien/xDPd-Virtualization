@@ -17,7 +17,7 @@
  */
 
 #include "virtualagent.h"
-#include <libconfig.h++>
+//#include <libconfig.h++>
 
 
 #include "slice.h"
@@ -26,6 +26,7 @@
 #include "../management/switch_manager.h"
 
 #include <sstream>
+#include <libconfig.h++>
 
 #include "../openflow/openflow10/of10_translation_utils.h"
 
@@ -50,7 +51,8 @@ std::map<std::string, uint32_t> virtual_agent::slice_id_map;
 std::list<va_switch*> virtual_agent::list_va_switch;
 std::list<slice*> virtual_agent::all_slices_list;
 std::list<flowspace_struct_t*>virtual_agent::all_flowspaces_list;
-bool* virtual_agent::active = NULL;
+libconfig::Config virtual_agent::virtual_link_setting;
+bool* virtual_agent::virtual_agent::active = NULL;
 uint32_t virtual_agent::slice_counter = 0;
 
 
@@ -1124,9 +1126,10 @@ void virtual_agent::write_cfg(std::string name) {
 		//Switch setting
 		////////////////
 		ostringstream dpid;
-		dpid << std::hex << setw(3) << tempSwitch->dp_id;
+		//dpid << std::hex << setw(3) << tempSwitch->dp_id;
+		dpid << std::hex  << tempSwitch->dp_id;
 		newsw.add("dpid", Setting::TypeString) = "0x"+dpid.str();
-		newsw.add("version", Setting::TypeFloat) = (tempSwitch->of_switch_vs == OF_VERSION_10)?1.0:1.0;
+		newsw.add("version", Setting::TypeFloat) = (tempSwitch->of_switch_vs == OF_VERSION_10)?1.0:1.2;
 		newsw.add("num-of-tables", Setting::TypeInt) = 1;//(int)tempSwitch->no_table;
 
 		Setting &port = newsw.add("ports", Setting::TypeList);
@@ -1141,6 +1144,27 @@ void virtual_agent::write_cfg(std::string name) {
 
 	}
 
+	////////////////
+	//Virtual interfaces
+	///////////////
+
+	Setting &vi = virtual_link_setting.getRoot();
+	if (vi.getLength() > 0)
+	{
+		Setting &interfaces = config.add("interfaces", Setting::TypeGroup);
+		Setting &virtuall = interfaces.add("virtual", Setting::TypeGroup);
+		for(int i = 0; i<vi.getLength(); ++i){
+			std::string key  ;
+			std::string value  ;
+			std::string name = vi[i].getName();
+			vi[i].lookupValue("link", key);
+			vi[i].lookupValue("lsi", value);
+
+			libconfig::Setting &vif_cfg = virtuall.add(name, libconfig::Setting::TypeGroup);
+			vif_cfg.add("link", libconfig::Setting::TypeString) = key;
+			vif_cfg.add("lsi", libconfig::Setting::TypeString) = value;
+		}
+	}
 	////////////////
 	//Empty virtual agent
 	////////////////

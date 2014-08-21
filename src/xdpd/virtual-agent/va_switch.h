@@ -58,7 +58,7 @@ public:
 
 
 	va_switch();
-	va_switch(std::string dp_name ,uint64_t dp_id);
+	va_switch(std::string dp_name ,uint64_t dp_id, of_version_t of_switch_vs);
 	virtual ~va_switch();
 
 private:

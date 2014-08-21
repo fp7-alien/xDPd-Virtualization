@@ -7,6 +7,8 @@
 #include "../../../port_manager.h"
 #include "../../../../openflow/openflow_switch.h"
 
+#include "../../../../virtual-agent/virtualagent.h"
+
 
 using namespace xdpd;
 using namespace rofl;
@@ -110,6 +112,26 @@ void virtual_ifaces_scope::post_validate(libconfig::Setting& setting, bool dry_r
 			provisioned_links[key] = true;
 		}
 	}
+
+ 	if (virtual_agent::is_active() && dry_run)
+ 	{
+ 		for(int i = 0; i<setting.getLength(); ++i){
+ 			if( !setting[i].exists(VIF_LINK) || !setting[i].exists(VIF_LSI) )
+ 			{
+ 				continue;
+ 			}
+ 			std::string key = setting[i][VIF_LINK];
+ 			std::string value = setting[i][VIF_LSI];
+ 			std::string name = setting[i].getName();
+ 			printf("key=%s vaue=%s name=%s\n",key.c_str(),value.c_str(), name.c_str());
+
+ 			libconfig::Setting &root = virtual_agent::virtual_link_setting.getRoot();
+ 			libconfig::Setting &vif_cfg = root.add(name, libconfig::Setting::TypeGroup);
+ 			vif_cfg.add(VIF_LINK, libconfig::Setting::TypeString) = key;
+ 			vif_cfg.add(VIF_LSI, libconfig::Setting::TypeString) = value;
+ 		}
+ 	}
+
 	
 	//Check size of partial_links. Must be zero
 	if(partial_links.size() > 0){

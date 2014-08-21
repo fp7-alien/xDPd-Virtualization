@@ -27,7 +27,6 @@
 #include "flowspace.h"
 #include "va_switch.h"
 
-
 #include <libconfig.h++>
 
 #ifndef VIRTUALAGENT_H_
@@ -53,6 +52,7 @@ public:
 	static va_switch* get_vaswitch(uint64_t* id = NULL, std::string* name = NULL);
 	static std::map<uint64_t, va_switch*> list_switch_by_id;
 	static std::map<std::string, va_switch*> list_switch_by_name;
+	static libconfig::Config virtual_link_setting;
 
 	static bool add_slice(slice* slice_to_add, bool connect=true);
 	static bool add_flowspace(flowspace_struct_t* flowspace_to_add);

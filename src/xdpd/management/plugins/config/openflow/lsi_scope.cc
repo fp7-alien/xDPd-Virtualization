@@ -362,7 +362,7 @@ void lsi_scope::post_validate(libconfig::Setting& setting, bool dry_run){
 			sw = switch_manager::create_switch2(version, dpid, name, num_of_tables, ma_list);
 		}
 		ROFL_INFO("Switch %s creato\n", name.c_str());
-		va_switch* switch_to_add = new va_switch(name, dpid);
+		va_switch* switch_to_add = new va_switch(name, dpid, version);
 		virtual_agent::add_switch(switch_to_add);
 
 		if(!sw){
