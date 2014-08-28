@@ -110,7 +110,7 @@ bool virtual_agent::add_slice(slice* slice_to_add, bool connect) {
 		slice_to_add->slice_id = slice_ID;
 		virtual_agent::list_switch_by_id[id]->slice_list.push_front(slice_to_add);
 		//virtual_agent::list_switch_by_name[dp_name]->slice_list.push_front(slice_to_add);
-		if (!slice_to_add->controller)
+		if (!slice_to_add->controller && connect )
 		{
 			printf("Aggiungo il controller preso da return_last_ctl()\n");
 			virtual_agent::list_switch_by_id[id]->controller_map[slice_to_add->name] = switch_manager::find_by_dpid(id)->getEndpoint()->return_last_ctl();
@@ -118,7 +118,7 @@ bool virtual_agent::add_slice(slice* slice_to_add, bool connect) {
 					virtual_agent::list_switch_by_id[id]->controller_map[slice_to_add->name]->get_peer_addr().c_str(),
 					virtual_agent::list_switch_by_id[id]->controller_map[slice_to_add->name]->c_str());
 		}
-		else
+		else if (connect)
 		{
 			printf("Aggiungo il controller passato %s\n", slice_to_add->controller->get_peer_addr().c_str());
 			virtual_agent::list_switch_by_id[id]->controller_map[slice_to_add->name] = slice_to_add->controller;

@@ -158,7 +158,7 @@ std::cout << "creazione slice\n";
 
 			try{
 				slice* slice_to_add = new slice(temp_sw->dp_name,temp_sw->dp_id, name, port, ip,port_list,NULL );
-				virtual_agent::add_slice(slice_to_add, true);
+				virtual_agent::add_slice(slice_to_add, false);
 			}
 			catch (eSliceExist) {
 				ROFL_ERR("Slice already exist\n");
@@ -251,7 +251,7 @@ int virtualization_gateway::deleteSlice(const std::string& name) {
 		{
 			count++;
 			slice* slice_to_remove = virtual_agent::list_switch_by_name[sw->dpname]->get_slice(name);
-			sw->rpc_disconnect_from_ctl(slice_to_remove->address);
+			//sw->rpc_disconnect_from_ctl(slice_to_remove->address);
 			std::string slice_name = slice_to_remove->name;
 			virtual_agent::list_switch_by_name[sw->dpname]->slice_list.remove(slice_to_remove);
 			ROFL_DEBUG("Slice %s removed from %s\n",slice_name.c_str(), sw->dpname.c_str());
