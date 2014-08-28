@@ -123,6 +123,12 @@ int virtualization_gateway::addFlowspace(const Json::Value& listDatapaths,
 	return 0;
 }
 
+/**
+ * returning value:
+ * -1: datapaths not existing
+ * -2: slice already exists
+ * -3: max number of slice reaches
+ */
 int virtualization_gateway::addSlice(const Json::Value& datapaths,
 		const std::string& ip, const std::string& name,
 		const std::string& ofversion, const int& port) {
@@ -156,10 +162,12 @@ std::cout << "creazione slice\n";
 			}
 			catch (eSliceExist) {
 				ROFL_ERR("Slice already exist\n");
+				return -2;
 			}
 			catch(eSliceConfigError)
 			{
 				ROFL_ERR("Slice error\n");
+				return -3;
 			}
 		}
 	}
@@ -211,10 +219,12 @@ std::cout << "creazione slice\n";
 		}
 		catch (eSliceExist) {
 			ROFL_ERR("Slice already exist\n");
+			return -2;
 		}
 		catch(eSliceConfigError)
 		{
 			ROFL_ERR("Slice error\n");
+			return -3;
 		}
 
 	}
@@ -224,8 +234,13 @@ std::cout << "creazione slice\n";
 	return 0;
 }
 
+/**
+ * returning value:
+ * -1 slice not exist
+ */
 int virtualization_gateway::deleteSlice(const std::string& name) {
 
+	int count = 0;
 	std::list<std::string> datapath_list = switch_manager::list_sw_names();
 	for (std::list<std::string>::iterator it = datapath_list.begin();
 			it != datapath_list.end();
@@ -234,6 +249,7 @@ int virtualization_gateway::deleteSlice(const std::string& name) {
 		openflow_switch* sw = switch_manager::find_by_name(*it);
 		if (virtual_agent::check_slice_existance(name,sw->dpname))
 		{
+			count++;
 			slice* slice_to_remove = virtual_agent::list_switch_by_name[sw->dpname]->get_slice(name);
 			sw->rpc_disconnect_from_ctl(slice_to_remove->address);
 			std::string slice_name = slice_to_remove->name;
@@ -244,7 +260,10 @@ int virtualization_gateway::deleteSlice(const std::string& name) {
 			ROFL_ERR("Slice %s not present\n", name.c_str());
 	}
 
-	return 0;
+	if (count ==0)
+		return -1;
+	else
+		return 0;
 }
 
 Json::Value virtualization_gateway::listDatapaths() {

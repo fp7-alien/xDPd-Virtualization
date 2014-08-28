@@ -242,6 +242,7 @@ of12_translation_utils::of12_map_flow_entry_matches(
 								ofmatch.get_vlan_vid_value(),
 								ofmatch.get_vlan_vid_mask());
 
+//		printf("value:%i, mask:%i\n",match->value->value.u16, match->value->mask.u16);
 		of1x_add_match_to_entry(entry, match);
 	} catch (eOFmatchNotFound& e) {}
 

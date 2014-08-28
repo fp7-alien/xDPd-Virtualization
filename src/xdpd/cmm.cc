@@ -131,6 +131,8 @@ afa_result_t cmm_process_of1x_packet_in(const of1x_switch_t* sw,
 			}
 
 			if (controller != NULL)
+			{
+				printf("send msg to %s\n", virtual_agent::list_switch_by_id[sw->dpid]->select_slice(controller)->name.c_str());
 				return dp->process_packet_in(table_id,
 							reason,
 							in_port,
@@ -140,6 +142,7 @@ afa_result_t cmm_process_of1x_packet_in(const of1x_switch_t* sw,
 							total_len,
 							matches,
 							controller);
+			}
 			else
 			{
 				/**

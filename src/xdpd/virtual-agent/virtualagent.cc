@@ -728,11 +728,17 @@ rofl_result_t virtual_agent::add_flowspace_match(of1x_flow_entry_t* entry, of1x_
 							match = of1x_init_vlan_vid_match(
 												/*prev*/NULL,
 												/*next*/NULL,
+//												(of_version == OF_VERSION_10)?
+//														flowspaceMatch->value->value.u16|OF1X_VLAN_PRESENT_MASK:
+//														flowspaceMatch->value->value.u16,
+//												(of_version == OF_VERSION_10)?
+//														0x1FFF:~0);
 												(of_version == OF_VERSION_10)?
 														flowspaceMatch->value->value.u16|OF1X_VLAN_PRESENT_MASK:
 														flowspaceMatch->value->value.u16,
 												(of_version == OF_VERSION_10)?
-														0x1FFF:~0);
+														0x1FFF:
+														0x1FFF);
 
 							temp_match = check_match_existance(flowspaceMatch->type,entry);
 							uint16_t vlan;
