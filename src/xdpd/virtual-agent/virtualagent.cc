@@ -1107,6 +1107,12 @@ bool virtual_agent::check_flowspace_existance(std::string flowspace_name,
 }
 
 void virtual_agent::write_cfg(std::string name) {
+	if (name=="")
+	{
+		extern char *__progname;
+		std::string program_name = __progname;
+		name = "real-time-config-"+program_name+".cfg";
+	}
 	Config cfg;
 	try{
 		std::string command = "rm " + name;

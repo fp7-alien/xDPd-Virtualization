@@ -77,7 +77,8 @@ int main(int argc, char **argv){
 			Json::Value matches;
 			matches["vlan_vid"] = 20;
 			Json::Value dpts;
-			dpts.append("dp1");
+			//dpts.append("dp1");
+			dpts.empty();
 			std::string flowspaceName = "fromVGfs";
 			int priority = 15;
 			std::string sliceName = "fromVG";

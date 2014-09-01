@@ -14,6 +14,7 @@
 #include <sstream>
 #include "virtualagent.h"
 #include "../management/switch_manager.h"
+#include <stdlib.h>
 
 #include <rofl/common/crofbase.h>
 
@@ -42,63 +43,144 @@ virtualization_gateway::~virtualization_gateway() {
 	this->StopListening();
 }
 
+/** Returning value
+ * -1: datapaths list format erro
+ * -2: matches needed
+ * -3: priority error
+ * -5: flowspace parameters error
+ * -6: slice not exists
+ * -100: unknown error (or very strange errors)
+ */
 int virtualization_gateway::addFlowspace(const Json::Value& listDatapaths,
 		const Json::Value& matches, const std::string& name,
-		const int& priority, const std::string& slice) {
-;
+		const int& priority,
+		const std::string& slice) {
+
 	//Check valid format value
-	if (!listDatapaths || !listDatapaths.isArray())
+	if (!listDatapaths.isNull() || !listDatapaths.isArray())
 	{
 		return -1;
 	}
 
 	if (!matches)
 	{
-		return -1;
+		return -2;
 	}
 
 	if ( !(priority < 1000 && priority > 0) )
 	{
-		return -2;
+		return -3;
 	}
 
-	std::cout << listDatapaths << "\n";
-	std::cout << matches << "\n";
-
-	//check if all datapaths exist
-	for (unsigned i=0; i<listDatapaths.size(); i++)
+	//Case array is filled
+	if(!listDatapaths.empty())
 	{
-		if (!switch_manager::find_by_name(listDatapaths[i].asString()))
+		//check if all datapaths exist
+		for (unsigned i=0; i<listDatapaths.size(); i++)
 		{
-			ROFL_ERR("datapath %s doesn't exist\n",listDatapaths[i].asString().c_str());
-			return -2;
+			if (!switch_manager::find_by_name(listDatapaths[i].asString()))
+			{
+				ROFL_ERR("datapath %s doesn't exist\n",listDatapaths[i].asString().c_str());
+				return -2;
+			}
+		}
+
+		//All datapaths exist, so it is possible to continue
+		for (unsigned i=0; i<listDatapaths.size(); i++)
+		{
+			std::string switch_name = listDatapaths[i].asString();
+			openflow_switch* sw = switch_manager::find_by_name(switch_name);
+			if (!sw)
+				return -2;
+
+			//validate flowspace and slice name.
+			if (virtual_agent::check_flowspace_existance(name,NULL,&switch_name) )
+				return -4;
+
+			if (!virtual_agent::check_slice_existance(slice, switch_name))
+				return -4;
+
+
+			ROFL_DEBUG("adding to datapath %s flowspace %s with destination slice %s\n",
+						sw->dpname.c_str(), name.c_str(), slice.c_str());
+
+			//validate flowspace_match
+			if ( !matches["dl_vlan"] || !matches["dl_vlan"].isInt() )
+			{
+				return -5;
+			}
+			flowspace_struct_t* flowspaceStruct = new flowspace_struct_t;
+			flowspaceStruct->name = name;
+			flowspaceStruct->priority = priority;
+			flowspaceStruct->slice = slice;
+
+			flowspace_match_t* match_vlanvid = new flowspace_match_t;
+			utern_t* uternvalue_vlanvid = new utern_t;
+			//Create the match
+			match_vlanvid->type = FLOWSPACE_MATCH_VLAN_VID;
+			uternvalue_vlanvid->value.u16 = matches["dl_vlan"].asInt();
+			uternvalue_vlanvid->type = UTERN16_T;
+			uternvalue_vlanvid->mask.u16 = ~0;
+			match_vlanvid->value = uternvalue_vlanvid;
+
+			//Update the match in the list
+			flowspaceStruct->match_list.push_front(match_vlanvid);
+
+			virtual_agent::list_switch_by_name[switch_name]->flowspace_struct_list.push_front(flowspaceStruct);
+			virtual_agent::all_flowspaces_list.push_front(flowspaceStruct);
 		}
 	}
-
-	//All datapaths exist, so it is possible to continue
-	for (unsigned i=0; i<listDatapaths.size(); i++)
+	else
 	{
-		std::string switch_name = listDatapaths[i].asString();
-		openflow_switch* sw = switch_manager::find_by_name(switch_name);
-		if (!sw)
-			return -2;
+		//datapaths list merging
+		std::list<va_switch*> datapaths_list10 = virtual_agent::get_all_va_switch( OF_VERSION_10);
+		std::list<va_switch*> datapaths_list12 = virtual_agent::get_all_va_switch( OF_VERSION_12);
+		std::list<va_switch*> datapaths_list;
+		datapaths_list.insert(datapaths_list.end(), datapaths_list10.begin(), datapaths_list10.end());
+		datapaths_list.insert(datapaths_list.end(), datapaths_list12.begin(), datapaths_list12.end());
 
-		//validate flowspace and slice name.
-		if (virtual_agent::check_flowspace_existance(name,NULL,&switch_name) )
-			return -4;
-
-		if (!virtual_agent::check_slice_existance(slice, switch_name))
-			return -4;
-
-
-		ROFL_DEBUG("adding to datapath %s flowspace %s with destination slice %s\n",
-					sw->dpname.c_str(), name.c_str(), slice.c_str());
-
-		//validate flowspace_match
-		if (!matches["vlan_vid"] || !matches["vlan_vid"].isInt())
+		for (std::list<va_switch*>::iterator it = datapaths_list.begin();
+				it != datapaths_list.end();
+				it++)
 		{
-			return -5;
+			va_switch* vasw = *it;
+			openflow_switch* sw = switch_manager::find_by_name(vasw->dp_name);
+			if (!sw)
+				return -100;
+			if (virtual_agent::check_flowspace_existance(name,NULL,&sw->dpname) )
+				return -4;
+
+			if (virtual_agent::check_slice_existance(slice, sw->dpname))
+			{
+
+				if (!matches["dl_vlan"] || !matches["dl_vlan"].isInt())
+				{
+					return -5;
+				}
+
+				flowspace_struct_t* flowspaceStruct = new flowspace_struct_t;
+				flowspaceStruct->name = name;
+				flowspaceStruct->priority = priority;
+				flowspaceStruct->slice = slice;
+
+				flowspace_match_t* match_vlanvid = new flowspace_match_t;
+				utern_t* uternvalue_vlanvid = new utern_t;
+				//Create the match
+				match_vlanvid->type = FLOWSPACE_MATCH_VLAN_VID;
+				uternvalue_vlanvid->value.u16 = matches["dl_vlan"].asInt();
+				uternvalue_vlanvid->type = UTERN16_T;
+				uternvalue_vlanvid->mask.u16 = ~0;
+				match_vlanvid->value = uternvalue_vlanvid;
+
+				//Update the match in the list
+				flowspaceStruct->match_list.push_front(match_vlanvid);
+
+				virtual_agent::list_switch_by_name[sw->dpname]->flowspace_struct_list.push_front(flowspaceStruct);
+			}
+			else
+				return -6;
 		}
+
 		flowspace_struct_t* flowspaceStruct = new flowspace_struct_t;
 		flowspaceStruct->name = name;
 		flowspaceStruct->priority = priority;
@@ -108,20 +190,20 @@ int virtualization_gateway::addFlowspace(const Json::Value& listDatapaths,
 		utern_t* uternvalue_vlanvid = new utern_t;
 		//Create the match
 		match_vlanvid->type = FLOWSPACE_MATCH_VLAN_VID;
-		uternvalue_vlanvid->value.u16 = matches["vlan_vid"].asInt();
+		uternvalue_vlanvid->value.u16 = matches["dl_vlan"].asInt();
 		uternvalue_vlanvid->type = UTERN16_T;
 		uternvalue_vlanvid->mask.u16 = ~0;
 		match_vlanvid->value = uternvalue_vlanvid;
 
 		//Update the match in the list
 		flowspaceStruct->match_list.push_front(match_vlanvid);
-
-		virtual_agent::list_switch_by_name[switch_name]->flowspace_struct_list.push_front(flowspaceStruct);
+		virtual_agent::all_flowspaces_list.push_front(flowspaceStruct);
 	}
 
-
+	virtual_agent::write_cfg("");
 	return 0;
 }
+
 
 /**
  * returning value:
@@ -132,7 +214,8 @@ int virtualization_gateway::addFlowspace(const Json::Value& listDatapaths,
 int virtualization_gateway::addSlice(const Json::Value& datapaths,
 		const std::string& ip, const std::string& name,
 		const std::string& ofversion, const int& port) {
-std::cout << "creazione slice\n";
+
+
 	//Validate switches and ports
 	if ( !check_datapaths(datapaths, name) && !datapaths.empty() )
 		return -1;
@@ -140,7 +223,6 @@ std::cout << "creazione slice\n";
 	{
 		//All datapaths with ofversion given
 		std::list<va_switch*> datapaths_list = virtual_agent::get_all_va_switch( (ofversion=="1.0")?OF_VERSION_10:OF_VERSION_12 );
-		std::cout << "dimensione lista " << datapaths_list.size() << "\n";
 		for (std::list<va_switch*>::iterator it = datapaths_list.begin();
 				it != datapaths_list.end();
 				it++)
@@ -230,7 +312,7 @@ std::cout << "creazione slice\n";
 	}
 	}
 
-	virtual_agent::write_cfg("real-time-config.cfg");
+	virtual_agent::write_cfg("");
 	return 0;
 }
 
@@ -254,6 +336,7 @@ int virtualization_gateway::deleteSlice(const std::string& name) {
 			//sw->rpc_disconnect_from_ctl(slice_to_remove->address);
 			std::string slice_name = slice_to_remove->name;
 			virtual_agent::list_switch_by_name[sw->dpname]->slice_list.remove(slice_to_remove);
+			virtual_agent::all_slices_list.remove(slice_to_remove);
 			ROFL_DEBUG("Slice %s removed from %s\n",slice_name.c_str(), sw->dpname.c_str());
 		}
 		else
@@ -263,7 +346,9 @@ int virtualization_gateway::deleteSlice(const std::string& name) {
 	if (count ==0)
 		return -1;
 	else
-		return 0;
+		virtual_agent::write_cfg("");
+
+	return 0;
 }
 
 Json::Value virtualization_gateway::listDatapaths() {
@@ -299,8 +384,8 @@ Json::Value virtualization_gateway::listFlowspaces() {
 				fs_it++)
 		 {
 			flowspace_struct_t* temp = *fs_it;
-			 std::string fs_name = temp->name;
-			 flowspace_list[*it].append(fs_name);
+			std::string fs_name = temp->name;
+			flowspace_list[*it].append(fs_name);
 		 }
 	}
 return flowspace_list;
@@ -358,6 +443,51 @@ Json::Value virtualization_gateway::listSliceInfo(const std::string& name) {
 }
 
 int virtualization_gateway::removeFlowspace(const std::string& name) {
+	std::list<std::string> datapath_list = switch_manager::list_sw_names();
+	for (std::list<std::string>::iterator it = datapath_list.begin();
+			it != datapath_list.end();
+			it++)
+	{
+		openflow_switch* sw = switch_manager::find_by_name(*it);
+
+		if (virtual_agent::check_flowspace_existance(name, NULL, &sw->dpname))
+		{
+			flowspace_struct_t* temp_flowspace;
+			for (std::list<flowspace_struct_t*>::iterator it = virtual_agent::list_switch_by_id[sw->dpid]->flowspace_struct_list.begin();
+					it != virtual_agent::list_switch_by_id[sw->dpid]->flowspace_struct_list.end();
+					it++)
+			{
+				temp_flowspace = *it;
+				std::cout << temp_flowspace->name << "\n";
+				if (temp_flowspace->name == name)
+				{
+					std::cout << "fs presente\n";
+					virtual_agent::list_switch_by_id[sw->dpid]->flowspace_struct_list.remove(temp_flowspace);
+					break;
+				}
+			}
+
+			for (std::list<flowspace_struct_t*>::iterator it = virtual_agent::all_flowspaces_list.begin();
+					it != virtual_agent::all_flowspaces_list.end();
+					it++)
+			{
+				flowspace_struct_t* temp = *it;
+				if (temp->name == name)
+				{
+					virtual_agent::all_flowspaces_list.remove(temp);\
+					break;
+				}
+			}
+		}
+		else
+		{
+			std::cout << "fs non presente\n";
+			ROFL_ERR("Flowspace %s not present\n", name.c_str());
+			return -1;
+		}
+	}
+
+		virtual_agent::write_cfg("");
 
 	return 0;
 }

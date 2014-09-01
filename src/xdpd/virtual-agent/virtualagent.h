@@ -42,11 +42,12 @@ class virtual_agent {
 
 private:
 	static std::list<va_switch*> list_va_switch;
-	static std::list<slice*> all_slices_list;
-	static std::list<flowspace_struct_t*> all_flowspaces_list;
 	static std::list<va_switch*> all_switches_list;
 
 public:
+
+	static std::list<slice*> all_slices_list;
+	static std::list<flowspace_struct_t*> all_flowspaces_list;
 
 	// List of switch
 	//TODO:[VA]use double linked list
@@ -65,7 +66,7 @@ public:
 	static bool check_slice_existance(std::string slice_name, uint64_t switch_id);
 	static slice* check_slice_existance(std::string slice_name, std::string switch_name);
 
-	static bool check_flowspace_existance(std::string flowspace_name, uint64_t* switch_id, std::string* switch_name);
+	static bool check_flowspace_existance(std::string flowspace_name, uint64_t* switch_id=NULL, std::string* switch_name=NULL);
 
 	virtual_agent();
 	virtual ~virtual_agent();
