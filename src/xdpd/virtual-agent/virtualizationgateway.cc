@@ -374,7 +374,7 @@ Json::Value virtualization_gateway::listFlowspaces() {
 
 	Json::Value flowspace_list;
 	std::list<std::string> datapath_list = switch_manager::list_sw_names();
-	for (std::list<std::string>::iterator it = datapath_list.begin();
+	/*for (std::list<std::string>::iterator it = datapath_list.begin();
 			it != datapath_list.end();
 			it++)
 	{
@@ -387,7 +387,31 @@ Json::Value virtualization_gateway::listFlowspaces() {
 			std::string fs_name = temp->name;
 			flowspace_list[*it].append(fs_name);
 		 }
+	}*/
+	for (std::list<flowspace_struct_t*>::iterator it = virtual_agent::all_flowspaces_list.begin();
+			it != virtual_agent::all_flowspaces_list.end();
+			it++)
+	{
+		flowspace_struct_t* temp = *it;
+		Json::Value fs_j;
+		fs_j["name"] = temp->name;
+		flowspace_match_t* temp_match = temp->match_list.front();
+		fs_j["vlan_id"] = temp_match->value->value.u16;
+
+		for (std::list<std::string>::iterator it = datapath_list.begin();
+				it != datapath_list.end();
+				it++)
+		{
+			std::string dp_name = *it;
+			if (virtual_agent::check_flowspace_existance(temp->name, NULL, &dp_name))
+				fs_j["dp"].append(*it);
+		}
+
+		flowspace_list.append(fs_j);
+
 	}
+
+
 return flowspace_list;
 }
 
