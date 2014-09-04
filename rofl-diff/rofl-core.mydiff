@@ -1,0 +1,84 @@
+diff --git a/src/rofl/common/ciosrv.cc b/src/rofl/common/ciosrv.cc
+index 3155231..f42bac0 100644
+--- a/src/rofl/common/ciosrv.cc
++++ b/src/rofl/common/ciosrv.cc
+@@ -1081,6 +1081,7 @@ ciosrv::child_sig_handler (int x) {
+ void
+ ciosrv::init()
+ {
++	printf("\n\nNuovo init\n\n");
+ 	if (ciosrv::threads.empty())
+ 	{
+ 		pthread_rwlock_init(&ciosrv::iothread_lock, 0);
+diff --git a/src/rofl/common/crofbase.cc b/src/rofl/common/crofbase.cc
+index a660d64..b7adbd8 100644
+--- a/src/rofl/common/crofbase.cc
++++ b/src/rofl/common/crofbase.cc
+@@ -317,6 +317,20 @@ crofbase::rpc_connect_to_ctl(
+ 	ofctl_set.insert(cofctl_factory(this, ofp_version, reconnect_start_timeout, ra, domain, type, protocol));
+ }
+ 
++cofctl*
++crofbase::rpc_connect_to_ctl_return(
++		uint8_t ofp_version,
++		int reconnect_start_timeout,
++		caddress const& ra,
++		int domain,
++		int type,
++		int protocol)
++{
++	cofctl* controller = cofctl_factory(this, ofp_version, reconnect_start_timeout, ra, domain, type, protocol);
++	//ofctl_set.insert(cofctl_factory(this, ofp_version, reconnect_start_timeout, ra, domain, type, protocol));
++	ofctl_set.insert(controller);
++	return controller;
++}
+ 
+ void
+ crofbase::rpc_disconnect_from_ctl(
+diff --git a/src/rofl/common/crofbase.h b/src/rofl/common/crofbase.h
+index 59a6198..25e45fe 100644
+--- a/src/rofl/common/crofbase.h
++++ b/src/rofl/common/crofbase.h
+@@ -271,6 +271,14 @@ public:
+ 			int type = SOCK_STREAM,
+ 			int protocol = IPPROTO_TCP);
+ 
++	cofctl*
++	rpc_connect_to_ctl_return(
++			uint8_t ofp_version,
++			int reconnect_start_timeout,
++			caddress const& ra,
++			int domain = PF_INET,
++			int type = SOCK_STREAM,
++			int protocol = IPPROTO_TCP);
+ 
+ 	/**
+ 	 * @fn		rpc_disconnect_from_ctl
+diff --git a/src/rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_match.c b/src/rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_match.c
+index 06f5e83..ab3ed9d 100644
+--- a/src/rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_match.c
++++ b/src/rofl/datapath/pipeline/openflow/openflow1x/pipeline/of1x_match.c
+@@ -1108,11 +1108,18 @@ inline bool __of1x_check_match(const of1x_packet_matches_t* pkt, of1x_match_t* i
+ 		
+ 		//802.1q
+    		case OF1X_MATCH_VLAN_VID: 
+-					if( (it->value->value.u16&OF1X_VLAN_PRESENT_MASK) && (!pkt->has_vlan) )
+-						return false;
+-					if( (!(it->value->value.u16&OF1X_VLAN_PRESENT_MASK)) && (pkt->has_vlan) )
+-						return false;
+-					return __utern_compare16(it->value,pkt->vlan_vid);
++					//if( (it->value->value.u16&OF1X_VLAN_PRESENT_MASK) && (!pkt->has_vlan) )
++					//	return false;
++					//if( (!(it->value->value.u16&OF1X_VLAN_PRESENT_MASK)) && (pkt->has_vlan) )
++					//	return false;
++   			if (pkt->has_vlan)
++   			{
++				return __utern_compare16(it->value,pkt->vlan_vid);
++   			}
++   			else
++   			{
++   				return false;
++   			}
+    		case OF1X_MATCH_VLAN_PCP: if(!pkt->has_vlan) return false;
+ 					return __utern_compare8(it->value,pkt->vlan_pcp);
+ 
